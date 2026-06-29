@@ -160,6 +160,21 @@ const confirm = (title, text, confirmText = "Ya, lanjutkan") =>
     },
   });
 
+const IconSparkle = ({ size = 20 }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M18.4 5.6l-2.8 2.8M8.4 15.6l-2.8 2.8" />
+  </svg>
+);
+
 // ── Badge status ──────────────────────────────────────────────────────────────
 function StatusBadge({ status, nilai }) {
   if (status !== "completed")
@@ -204,6 +219,28 @@ export default function SiswaDashboard() {
   // History tab state
   const [riwayat, setRiwayat] = useState([]);
 
+  const TOPIK_LIST = [
+    "Bilangan (Bulat, Pecahan, Desimal, Persen)",
+    "Aljabar",
+    "Persamaan Linear",
+    "Perbandingan & Skala",
+    "Bangun Datar",
+    "Pythagoras",
+    "Bangun Ruang",
+    "Statistika",
+    "Peluang",
+    "Persamaan Kuadrat",
+  ];
+  const TINGKAT_LIST = ["Mudah", "Sedang", "Sulit"];
+  // Latihan AI tab state
+  const [latihanTopik, setLatihanTopik] = useState(TOPIK_LIST[0]);
+  const [latihanTingkat, setLatihanTingkat] = useState(TINGKAT_LIST[0]);
+  const [latihanSoal, setLatihanSoal] = useState("");
+  const [loadingSoal, setLoadingSoal] = useState(false);
+  const [latihanImages, setLatihanImages] = useState([]);
+  const [loadingLatihanScan, setLoadingLatihanScan] = useState(false);
+  const [latihanResult, setLatihanResult] = useState(null);
+
   useEffect(() => {
     loadScript("https://cdn.jsdelivr.net/npm/sweetalert2@11", "swal2");
     fetchClasses();
@@ -213,7 +250,6 @@ export default function SiswaDashboard() {
   useEffect(() => {
     if (selectedClass) fetchAssignments(selectedClass);
   }, [selectedClass]);
-
 
   useEffect(() => {
     if (activeTab === "kelas") {
@@ -273,6 +309,71 @@ export default function SiswaDashboard() {
       localStorage.clear();
       navigate("/login");
     }
+  };
+
+  const handleGenerateSoal = async () => {
+    setLoadingSoal(true);
+    setLatihanSoal("");
+    setLatihanResult(null);
+    setLatihanImages([]);
+    try {
+      const res = await fetch(`${API_BASE_URL}/siswa/latihan/soal`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+        body: JSON.stringify({
+          topik: latihanTopik,
+          tingkat_kesulitan: latihanTingkat,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setLatihanSoal(data.soal);
+      } else {
+        toast("error", data.error || "Gagal membuat soal.");
+      }
+    } catch (_) {
+      toast("error", "Terjadi kesalahan saat membuat soal.");
+    } finally {
+      setLoadingSoal(false);
+    }
+  };
+
+  const handleSubmitLatihan = async (e) => {
+    e.preventDefault();
+    if (latihanImages.length === 0)
+      return toast("warning", "Pilih minimal 1 foto pengerjaan!");
+    setLoadingLatihanScan(true);
+    const formData = new FormData();
+    formData.append("topik", latihanTopik);
+    formData.append("tingkat_kesulitan", latihanTingkat);
+    formData.append("soal_text", latihanSoal);
+    for (let i = 0; i < latihanImages.length; i++)
+      formData.append("images", latihanImages[i]);
+    try {
+      const res = await fetch(`${API_BASE_URL}/siswa/latihan/scan`, {
+        method: "POST",
+        headers: getAuthHeaders(true),
+        body: formData,
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setLatihanResult(data.analysis);
+        toast("success", "Latihan berhasil dievaluasi!");
+        fetchRiwayat();
+      } else {
+        toast("error", data.error || "Gagal mengevaluasi latihan.");
+      }
+    } catch (_) {
+      toast("error", "Terjadi kesalahan saat mengevaluasi latihan.");
+    } finally {
+      setLoadingLatihanScan(false);
+    }
+  };
+
+  const handleSoalBaru = () => {
+    setLatihanSoal("");
+    setLatihanResult(null);
+    setLatihanImages([]);
   };
 
   /* ── Data fetching ── */
@@ -420,6 +521,7 @@ export default function SiswaDashboard() {
   const navItems = [
     { id: "kelas", label: "Kelas Saya", Icon: IconClass },
     { id: "scan", label: "Kerjakan Tugas", Icon: IconScan },
+    { id: "latihan", label: "Latihan AI", Icon: IconSparkle },
     { id: "riwayat", label: "Riwayat Belajar", Icon: IconHistory },
   ];
 
@@ -1019,6 +1121,297 @@ export default function SiswaDashboard() {
                     ))}
                   </tbody>
                 </table>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ════════════════════════════════════════
+    TAB: LATIHAN AI
+════════════════════════════════════════ */}
+        {activeTab === "latihan" && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            {/* Left: pilih topik & buat soal */}
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+              <div className="px-6 pt-6 pb-4 border-b border-slate-100">
+                <h2 className="font-bold text-slate-800 text-lg">
+                  Latihan Soal Mandiri
+                </h2>
+                <p className="text-sm text-slate-500 mt-0.5">
+                  Pilih topik & tingkat kesulitan, lalu minta AI membuatkan soal
+                  untukmu.
+                </p>
+              </div>
+
+              <div className="p-6 space-y-5">
+                {!latihanSoal ? (
+                  <>
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 mb-1.5">
+                        Topik
+                      </label>
+                      <select
+                        value={latihanTopik}
+                        onChange={(e) => setLatihanTopik(e.target.value)}
+                        className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                      >
+                        {TOPIK_LIST.map((t) => (
+                          <option key={t} value={t}>
+                            {t}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 mb-1.5">
+                        Tingkat Kesulitan
+                      </label>
+                      <div className="grid grid-cols-3 gap-2">
+                        {TINGKAT_LIST.map((t) => (
+                          <button
+                            key={t}
+                            type="button"
+                            onClick={() => setLatihanTingkat(t)}
+                            className={`py-2 rounded-xl text-sm font-semibold border transition-all ${
+                              latihanTingkat === t
+                                ? "bg-indigo-600 text-white border-indigo-600"
+                                : "bg-slate-50 text-slate-500 border-slate-200 hover:border-indigo-300"
+                            }`}
+                          >
+                            {t}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={handleGenerateSoal}
+                      disabled={loadingSoal}
+                      className={`w-full py-3 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 ${
+                        loadingSoal
+                          ? "bg-slate-200 text-slate-400 cursor-not-allowed"
+                          : "bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm hover:shadow-md"
+                      }`}
+                    >
+                      {loadingSoal ? (
+                        <>
+                          <svg
+                            className="animate-spin w-4 h-4"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                          >
+                            <circle
+                              className="opacity-25"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="currentColor"
+                              strokeWidth="4"
+                            />
+                            <path
+                              className="opacity-75"
+                              fill="currentColor"
+                              d="M4 12a8 8 0 018-8v8z"
+                            />
+                          </svg>
+                          Membuat soal...
+                        </>
+                      ) : (
+                        <>
+                          <IconSparkle size={16} /> Buatkan Soal
+                        </>
+                      )}
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    {/* Soal yang dibuat AI */}
+                    <div className="p-4 bg-indigo-50 border border-indigo-200 rounded-xl">
+                      <p className="text-xs font-bold uppercase tracking-widest text-indigo-400 mb-2">
+                        Soal · {latihanTopik} ({latihanTingkat})
+                      </p>
+                      <p className="text-sm text-indigo-900 whitespace-pre-wrap leading-relaxed">
+                        {latihanSoal}
+                      </p>
+                    </div>
+
+                    {!latihanResult ? (
+                      <form
+                        onSubmit={handleSubmitLatihan}
+                        className="space-y-5"
+                      >
+                        <label className="block cursor-pointer group">
+                          <div className="border-2 border-dashed border-slate-200 group-hover:border-indigo-400 rounded-xl p-8 text-center transition-colors bg-slate-50 group-hover:bg-indigo-50">
+                            <div className="flex flex-col items-center gap-2 text-slate-400 group-hover:text-indigo-500 transition-colors">
+                              <IconUpload size={28} />
+                              <p className="font-semibold text-sm">
+                                Klik untuk pilih foto jawaban
+                              </p>
+                              <p className="text-xs">
+                                JPG, PNG — boleh lebih dari 1 foto
+                              </p>
+                            </div>
+                            {latihanImages.length > 0 && (
+                              <p className="mt-3 text-sm font-semibold text-indigo-600">
+                                {latihanImages.length} foto terpilih ✓
+                              </p>
+                            )}
+                          </div>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            className="sr-only"
+                            onChange={(e) => setLatihanImages(e.target.files)}
+                          />
+                        </label>
+
+                        {latihanImages.length > 0 && (
+                          <div className="flex gap-2 flex-wrap">
+                            {Array.from(latihanImages).map((file, i) => (
+                              <div
+                                key={i}
+                                className="w-16 h-16 rounded-lg overflow-hidden border border-slate-200 bg-slate-100 flex-shrink-0"
+                              >
+                                <img
+                                  src={URL.createObjectURL(file)}
+                                  alt=""
+                                  className="w-full h-full object-cover"
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        <div className="flex gap-2">
+                          <button
+                            type="button"
+                            onClick={handleSoalBaru}
+                            className="px-4 py-3 rounded-xl font-bold text-sm bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all"
+                          >
+                            Ganti Soal
+                          </button>
+                          <button
+                            type="submit"
+                            disabled={loadingLatihanScan}
+                            className={`flex-1 py-3 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 ${
+                              loadingLatihanScan
+                                ? "bg-slate-200 text-slate-400 cursor-not-allowed"
+                                : "bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm hover:shadow-md"
+                            }`}
+                          >
+                            {loadingLatihanScan ? (
+                              <>
+                                <svg
+                                  className="animate-spin w-4 h-4"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                >
+                                  <circle
+                                    className="opacity-25"
+                                    cx="12"
+                                    cy="12"
+                                    r="10"
+                                    stroke="currentColor"
+                                    strokeWidth="4"
+                                  />
+                                  <path
+                                    className="opacity-75"
+                                    fill="currentColor"
+                                    d="M4 12a8 8 0 018-8v8z"
+                                  />
+                                </svg>
+                                Mengevaluasi...
+                              </>
+                            ) : (
+                              "Kirim & Evaluasi"
+                            )}
+                          </button>
+                        </div>
+                      </form>
+                    ) : (
+                      <button
+                        onClick={handleSoalBaru}
+                        className="w-full py-3 rounded-xl font-bold text-sm bg-indigo-600 hover:bg-indigo-700 text-white transition-all flex items-center justify-center gap-2"
+                      >
+                        <IconSparkle size={16} /> Coba Soal Baru
+                      </button>
+                    )}
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* Right: hasil evaluasi AI */}
+            <div>
+              {latihanResult ? (
+                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden h-full">
+                  <div className="px-6 pt-6 pb-4 border-b border-slate-100 flex items-center gap-2">
+                    <div className="w-6 h-6 bg-violet-100 rounded-md flex items-center justify-center">
+                      <IconSparkle size={14} />
+                    </div>
+                    <h3 className="font-bold text-slate-800">
+                      Hasil Evaluasi AI
+                    </h3>
+                  </div>
+                  <div className="p-6 space-y-5">
+                    {latihanResult.nilai !== null &&
+                      latihanResult.nilai !== undefined && (
+                        <div className="p-4 bg-indigo-50 border border-indigo-200 rounded-xl text-center">
+                          <p className="text-xs font-bold uppercase tracking-widest text-indigo-400 mb-1">
+                            Nilai Kamu
+                          </p>
+                          <p className="text-4xl font-black text-indigo-700">
+                            {latihanResult.nilai}
+                            <span className="text-base font-bold text-indigo-400">
+                              /100
+                            </span>
+                          </p>
+                        </div>
+                      )}
+
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-2">
+                        Jawaban terdeteksi
+                      </p>
+                      <pre className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono text-slate-700 overflow-auto whitespace-pre-wrap leading-relaxed">
+                        {latihanResult.ocr_result_text}
+                      </pre>
+                    </div>
+
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-2">
+                        Umpan Balik Pembelajaran
+                      </p>
+                      <div className="p-4 bg-violet-50 border border-violet-200 rounded-xl text-sm text-violet-900 leading-relaxed">
+                        {latihanResult.analisis_pembelajaran ? (
+                          <div
+                            className="space-y-2 prose prose-sm prose-indigo max-w-none"
+                            dangerouslySetInnerHTML={{
+                              __html: latihanResult.analisis_pembelajaran,
+                            }}
+                          />
+                        ) : (
+                          <p className="italic text-violet-400">
+                            Tidak ada umpan balik.
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center h-full min-h-56 p-8 text-center bg-white rounded-2xl border-2 border-dashed border-slate-200">
+                  <div className="w-14 h-14 bg-violet-50 rounded-xl flex items-center justify-center mb-4">
+                    <IconSparkle size={24} />
+                  </div>
+                  <p className="text-slate-400 text-sm max-w-xs">
+                    {latihanSoal
+                      ? "Upload foto pengerjaanmu untuk melihat evaluasi AI di sini."
+                      : "Buat soal terlebih dahulu untuk memulai latihan mandiri."}
+                  </p>
+                </div>
               )}
             </div>
           </div>
