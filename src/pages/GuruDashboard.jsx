@@ -313,10 +313,59 @@ export default function GuruDashboard() {
     }
   };
 
+  const [selectedFoto, setSelectedFoto] = useState(null);
+  const [initialDistance, setInitialDistance] = useState(null);
+  const [scale, setScale] = useState(1);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+
+  const getDistance = (touches) => {
+    return Math.hypot(
+      touches[0].clientX - touches[1].clientX,
+      touches[0].clientY - touches[1].clientY,
+    );
+  };
+
+  const getPhotoArray = (rawUrl) => {
+    if (!rawUrl) return [];
+    try {
+      const parsed = JSON.parse(rawUrl);
+      // Pastikan hasilnya selalu Array, meskipun isinya cuma 1 foto
+      return Array.isArray(parsed) ? parsed : [parsed];
+    } catch (error) {
+      // Fallback jika bukan JSON yang valid
+      return [rawUrl.replace(/[\[\]"\\]/g, "")];
+    }
+  };
+
+  const handleCloseModal = () => {
+    setSelectedFoto(null);
+    setScale(1);
+    setPosition({ x: 0, y: 0 });
+    setIsDragging(false);
+    setInitialDistance(null);
+  };
   /* Load external deps once */
   useEffect(() => {
     ensureDeps().then(() => setDepsReady(true));
   }, []);
+
+  useEffect(() => {
+    // Jika ada foto yang dipilih (modal terbuka)
+    if (selectedFoto) {
+      // Kunci scroll pada body
+      document.body.style.overflow = "hidden";
+    } else {
+      // Kembalikan scroll pada body saat modal ditutup
+      document.body.style.overflow = "auto";
+    }
+
+    // Cleanup function: pastikan scroll dikembalikan jika komponen tiba-tiba di-unmount
+    return () => {
+      document.body.style.overflow = "auto";
+    };
+  }, [selectedFoto]); // Efek ini akan berjalan setiap kali state 'selectedFoto' berubah
 
   /* Init/destroy DataTable whenever monitoring data changes */
   // Effect 1: Init DataTables ONCE when deps are ready and tab is monitoring
@@ -749,6 +798,171 @@ export default function GuruDashboard() {
   ═══════════════════════════════════════════════════════════════════════════ */
   return (
     <div className="min-h-screen bg-slate-50 font-sans">
+      {selectedFoto && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 overflow-hidden"
+          // Event listener utama untuk menangkap pergeseran mouse
+          onMouseMove={
+            isDragging
+              ? (e) =>
+                  setPosition({
+                    x: e.clientX - dragStart.x,
+                    y: e.clientY - dragStart.y,
+                  })
+              : undefined
+          }
+          onMouseUp={() => setIsDragging(false)}
+          onMouseLeave={() => setIsDragging(false)}
+        >
+          {/* Tombol Close (X) */}
+          <button
+            className="absolute top-6 right-8 text-white text-4xl font-bold hover:text-slate-300 transition-colors z-[60]"
+            onClick={handleCloseModal}
+          >
+            &times;
+          </button>
+
+          {/* Kontrol Zoom di Bawah */}
+          <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-4 bg-slate-900/80 px-6 py-3 rounded-full backdrop-blur-sm z-[60] shadow-xl border border-white/10">
+            <button
+              className="text-white hover:text-indigo-400 font-bold text-xl px-2"
+              onClick={(e) => {
+                e.stopPropagation();
+                setScale((p) => Math.max(1, p - 0.5));
+              }}
+            >
+              -
+            </button>
+            <span className="text-white text-sm font-medium w-12 text-center">
+              {Math.round(scale * 100)}%
+            </span>
+            <button
+              className="text-white hover:text-indigo-400 font-bold text-xl px-2"
+              onClick={(e) => {
+                e.stopPropagation();
+                setScale((p) => Math.min(5, p + 0.5));
+              }}
+            >
+              +
+            </button>
+            <div className="w-[1px] h-4 bg-white/30 mx-2"></div>
+            <button
+              className="text-xs text-white/80 hover:text-white uppercase tracking-wider font-semibold"
+              onClick={(e) => {
+                e.stopPropagation();
+                setScale(1);
+                setPosition({ x: 0, y: 0 });
+              }}
+            >
+              Reset
+            </button>
+          </div>
+
+          {/* Area pembungkus untuk menangkap Scroll (Wheel) dan klik background */}
+          <div
+            className="absolute inset-0 flex items-center justify-center touch-none" // Tambahkan touch-none agar browser tidak ikut men-scroll halaman
+            onClick={handleCloseModal}
+            // === LOGIKA LAPTOP / PC ===
+            onWheel={(e) => {
+              if (e.deltaY < 0) {
+                setScale((p) => Math.min(5, p + 0.25));
+              } else {
+                setScale((p) => {
+                  const newScale = Math.max(1, p - 0.25);
+                  if (newScale === 1) setPosition({ x: 0, y: 0 });
+                  return newScale;
+                });
+              }
+            }}
+            onMouseMove={
+              isDragging
+                ? (e) =>
+                    setPosition({
+                      x: e.clientX - dragStart.x,
+                      y: e.clientY - dragStart.y,
+                    })
+                : undefined
+            }
+            onMouseUp={() => setIsDragging(false)}
+            onMouseLeave={() => setIsDragging(false)}
+            // === LOGIKA HP / TOUCHSCREEN ===
+            onTouchStart={(e) => {
+              if (e.touches.length === 2) {
+                // Jika 2 jari menyentuh layar, mulai mode Zoom
+                setInitialDistance(getDistance(e.touches));
+              } else if (e.touches.length === 1 && scale > 1) {
+                // Jika 1 jari dan gambar sedang di-zoom, mulai mode Geser (Pan)
+                setIsDragging(true);
+                setDragStart({
+                  x: e.touches[0].clientX - position.x,
+                  y: e.touches[0].clientY - position.y,
+                });
+              }
+            }}
+            onTouchMove={(e) => {
+              if (e.touches.length === 2 && initialDistance) {
+                // Proses Zooming 2 jari
+                e.preventDefault();
+                const currentDistance = getDistance(e.touches);
+                // Hitung rasio perubahan jarak jari
+                const scaleChange = currentDistance / initialDistance;
+
+                setScale((p) => {
+                  const newScale = Math.min(Math.max(1, p * scaleChange), 5);
+                  if (newScale === 1) setPosition({ x: 0, y: 0 });
+                  return newScale;
+                });
+
+                // Perbarui jarak awal untuk pergerakan selanjutnya agar mulus
+                setInitialDistance(currentDistance);
+              } else if (e.touches.length === 1 && isDragging) {
+                // Proses Geser 1 jari
+                setPosition({
+                  x: e.touches[0].clientX - dragStart.x,
+                  y: e.touches[0].clientY - dragStart.y,
+                });
+              }
+            }}
+            onTouchEnd={() => {
+              setIsDragging(false);
+              setInitialDistance(null);
+            }}
+          >
+            {/* Gambar Ukuran Besar */}
+            <img
+              src={selectedFoto}
+              alt="Foto Jawaban Diperbesar"
+              draggable={false} // Mencegah gambar terseret (fitur bawaan browser)
+              className={`max-w-full max-h-[85vh] object-contain rounded shadow-2xl ${
+                scale > 1
+                  ? isDragging
+                    ? "cursor-grabbing"
+                    : "cursor-grab"
+                  : "cursor-default"
+              }`}
+              style={{
+                // Terapkan skala (zoom) dan translasi (geser)
+                transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,
+                // Matikan animasi CSS saat sedang di-drag agar pergerakan mouse responsif
+                transition: isDragging ? "none" : "transform 0.15s ease-out",
+              }}
+              onClick={(e) => e.stopPropagation()} // Mencegah klik pada gambar menutup modal
+              onMouseDown={(e) => {
+                // Mulai drag hanya jika gambar sedang di-zoom
+                if (scale > 1) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setIsDragging(true);
+                  setDragStart({
+                    x: e.clientX - position.x,
+                    y: e.clientY - position.y,
+                  });
+                }
+              }}
+            />
+          </div>
+        </div>
+      )}
       {/* ── HEADER ── */}
       <header className="bg-white border-b border-slate-200 sticky top-0 z-30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
@@ -1234,18 +1448,20 @@ export default function GuruDashboard() {
                                               </p>
                                               <div className="flex gap-2 flex-wrap">
                                                 {photos.map((photo, idx) => (
-                                                  <a
+                                                  <button
                                                     key={idx}
-                                                    href={`${photo}`}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
+                                                    type="button"
+                                                    onClick={() =>
+                                                      setSelectedFoto(photo)
+                                                    }
+                                                    className="overflow-hidden rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                                   >
                                                     <img
                                                       src={`${photo}`}
                                                       alt={`Foto ${idx + 1}`}
                                                       className="h-20 w-20 object-cover border border-slate-200 rounded-lg shadow-sm hover:scale-105 transition-transform cursor-zoom-in"
                                                     />
-                                                  </a>
+                                                  </button>
                                                 ))}
                                               </div>
                                             </div>

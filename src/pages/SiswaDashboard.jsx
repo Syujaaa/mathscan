@@ -200,7 +200,8 @@ function StatusBadge({ status, nilai }) {
 export default function SiswaDashboard() {
   const [activeTab, setActiveTab] = useState("kelas");
   const navigate = useNavigate();
-
+  const [selectedAnalisis, setSelectedAnalisis] = useState(null);
+  const [selectedFoto, setSelectedFoto] = useState(null);
   // Scan tab state
   const [images, setImages] = useState([]);
   const [activeAssignmentId, setActiveAssignmentId] = useState("");
@@ -240,7 +241,45 @@ export default function SiswaDashboard() {
   const [latihanImages, setLatihanImages] = useState([]);
   const [loadingLatihanScan, setLoadingLatihanScan] = useState(false);
   const [latihanResult, setLatihanResult] = useState(null);
+  const [initialDistance, setInitialDistance] = useState(null);
+  const [scale, setScale] = useState(1);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
 
+  const getDistance = (touches) => {
+    return Math.hypot(
+      touches[0].clientX - touches[1].clientX,
+      touches[0].clientY - touches[1].clientY,
+    );
+  };
+  // Fungsi untuk menutup modal sekaligus mereset zoom
+  const handleCloseModal = () => {
+    setSelectedFoto(null);
+    setScale(1);
+    setPosition({ x: 0, y: 0 });
+  };
+  const getPhotoArray = (rawUrl) => {
+    if (!rawUrl) return [];
+
+    try {
+      // 1. Bersihkan double quotes ganda ("") menjadi satu kutip (") agar jadi JSON valid
+      const cleanJson = rawUrl.replace(/""/g, '"');
+
+      // 2. Parse string tersebut menjadi array
+      const parsed = JSON.parse(cleanJson);
+
+      // 3. Pastikan output selalu berupa array pembungkus
+      return Array.isArray(parsed) ? parsed : [parsed];
+    } catch (error) {
+      // Fallback jika formatnya benar-benar rusak / teks biasa, split berdasarkan koma
+      const cleanStr = rawUrl.replace(/[\[\]"\\]/g, "");
+      return cleanStr
+        .split(",")
+        .map((url) => url.trim())
+        .filter(Boolean);
+    }
+  };
   useEffect(() => {
     loadScript("https://cdn.jsdelivr.net/npm/sweetalert2@11", "swal2");
     fetchClasses();
@@ -528,6 +567,210 @@ export default function SiswaDashboard() {
   // ── Render ──────────────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-slate-50 font-sans">
+      {selectedAnalisis && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+          onClick={() => setSelectedAnalisis(null)} // Tutup jika klik area hitam/luar modal
+        >
+          <div
+            className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[80vh] flex flex-col overflow-hidden"
+            onClick={(e) => e.stopPropagation()} // Mencegah modal tertutup saat konten dalam modal diklik
+          >
+            {/* Header Modal */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50">
+              <h3 className="font-bold text-slate-800 text-sm uppercase tracking-wider">
+                Detail Analisis Pembelajaran
+              </h3>
+              <button
+                className="text-slate-400 hover:text-slate-600 text-2xl font-semibold leading-none transition-colors"
+                onClick={() => setSelectedAnalisis(null)}
+              >
+                &times;
+              </button>
+            </div>
+
+            {/* Konten Utama (Render HTML Otomatis dari Database) */}
+            <div className="overflow-y-auto p-6 text-sm">
+              <div dangerouslySetInnerHTML={{ __html: selectedAnalisis }} />
+            </div>
+
+            {/* Footer Modal */}
+            <div className="flex justify-end px-6 py-3.5 border-t border-slate-100 bg-slate-50">
+              <button
+                className="px-4 py-2 bg-slate-600 hover:bg-slate-700 text-white text-xs font-semibold rounded-lg transition-colors shadow-sm"
+                onClick={() => setSelectedAnalisis(null)}
+              >
+                Tutup
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {selectedFoto && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 overflow-hidden"
+          // Event listener utama untuk menangkap pergeseran mouse
+          onMouseMove={
+            isDragging
+              ? (e) =>
+                  setPosition({
+                    x: e.clientX - dragStart.x,
+                    y: e.clientY - dragStart.y,
+                  })
+              : undefined
+          }
+          onMouseUp={() => setIsDragging(false)}
+          onMouseLeave={() => setIsDragging(false)}
+        >
+          {/* Tombol Close (X) */}
+          <button
+            className="absolute top-6 right-8 text-white text-4xl font-bold hover:text-slate-300 transition-colors z-[60]"
+            onClick={handleCloseModal}
+          >
+            &times;
+          </button>
+
+          {/* Kontrol Zoom di Bawah */}
+          <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-4 bg-slate-900/80 px-6 py-3 rounded-full backdrop-blur-sm z-[60] shadow-xl border border-white/10">
+            <button
+              className="text-white hover:text-indigo-400 font-bold text-xl px-2"
+              onClick={(e) => {
+                e.stopPropagation();
+                setScale((p) => Math.max(1, p - 0.5));
+              }}
+            >
+              -
+            </button>
+            <span className="text-white text-sm font-medium w-12 text-center">
+              {Math.round(scale * 100)}%
+            </span>
+            <button
+              className="text-white hover:text-indigo-400 font-bold text-xl px-2"
+              onClick={(e) => {
+                e.stopPropagation();
+                setScale((p) => Math.min(5, p + 0.5));
+              }}
+            >
+              +
+            </button>
+            <div className="w-[1px] h-4 bg-white/30 mx-2"></div>
+            <button
+              className="text-xs text-white/80 hover:text-white uppercase tracking-wider font-semibold"
+              onClick={(e) => {
+                e.stopPropagation();
+                setScale(1);
+                setPosition({ x: 0, y: 0 });
+              }}
+            >
+              Reset
+            </button>
+          </div>
+
+          {/* Area pembungkus untuk menangkap Scroll (Wheel) dan klik background */}
+          <div
+            className="absolute inset-0 flex items-center justify-center touch-none" // Tambahkan touch-none agar browser tidak ikut men-scroll halaman
+            onClick={handleCloseModal}
+            // === LOGIKA LAPTOP / PC ===
+            onWheel={(e) => {
+              if (e.deltaY < 0) {
+                setScale((p) => Math.min(5, p + 0.25));
+              } else {
+                setScale((p) => {
+                  const newScale = Math.max(1, p - 0.25);
+                  if (newScale === 1) setPosition({ x: 0, y: 0 });
+                  return newScale;
+                });
+              }
+            }}
+            onMouseMove={
+              isDragging
+                ? (e) =>
+                    setPosition({
+                      x: e.clientX - dragStart.x,
+                      y: e.clientY - dragStart.y,
+                    })
+                : undefined
+            }
+            onMouseUp={() => setIsDragging(false)}
+            onMouseLeave={() => setIsDragging(false)}
+            // === LOGIKA HP / TOUCHSCREEN ===
+            onTouchStart={(e) => {
+              if (e.touches.length === 2) {
+                // Jika 2 jari menyentuh layar, mulai mode Zoom
+                setInitialDistance(getDistance(e.touches));
+              } else if (e.touches.length === 1 && scale > 1) {
+                // Jika 1 jari dan gambar sedang di-zoom, mulai mode Geser (Pan)
+                setIsDragging(true);
+                setDragStart({
+                  x: e.touches[0].clientX - position.x,
+                  y: e.touches[0].clientY - position.y,
+                });
+              }
+            }}
+            onTouchMove={(e) => {
+              if (e.touches.length === 2 && initialDistance) {
+                // Proses Zooming 2 jari
+                e.preventDefault();
+                const currentDistance = getDistance(e.touches);
+                // Hitung rasio perubahan jarak jari
+                const scaleChange = currentDistance / initialDistance;
+
+                setScale((p) => {
+                  const newScale = Math.min(Math.max(1, p * scaleChange), 5);
+                  if (newScale === 1) setPosition({ x: 0, y: 0 });
+                  return newScale;
+                });
+
+                // Perbarui jarak awal untuk pergerakan selanjutnya agar mulus
+                setInitialDistance(currentDistance);
+              } else if (e.touches.length === 1 && isDragging) {
+                // Proses Geser 1 jari
+                setPosition({
+                  x: e.touches[0].clientX - dragStart.x,
+                  y: e.touches[0].clientY - dragStart.y,
+                });
+              }
+            }}
+            onTouchEnd={() => {
+              setIsDragging(false);
+              setInitialDistance(null);
+            }}
+          >
+            {/* Gambar Ukuran Besar */}
+            <img
+              src={selectedFoto}
+              alt="Foto Jawaban Diperbesar"
+              draggable={false} // Mencegah gambar terseret (fitur bawaan browser)
+              className={`max-w-full max-h-[85vh] object-contain rounded shadow-2xl ${
+                scale > 1
+                  ? isDragging
+                    ? "cursor-grabbing"
+                    : "cursor-grab"
+                  : "cursor-default"
+              }`}
+              style={{
+                // Terapkan skala (zoom) dan translasi (geser)
+                transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,
+                // Matikan animasi CSS saat sedang di-drag agar pergerakan mouse responsif
+                transition: isDragging ? "none" : "transform 0.15s ease-out",
+              }}
+              onClick={(e) => e.stopPropagation()} // Mencegah klik pada gambar menutup modal
+              onMouseDown={(e) => {
+                // Mulai drag hanya jika gambar sedang di-zoom
+                if (scale > 1) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setIsDragging(true);
+                  setDragStart({
+                    x: e.clientX - position.x,
+                    y: e.clientY - position.y,
+                  });
+                }
+              }}
+            />
+          </div>
+        </div>
+      )}
       {/* ── TOP HEADER ── */}
       <header className="bg-white border-b border-slate-200 sticky top-0 z-30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
@@ -1083,8 +1326,15 @@ export default function SiswaDashboard() {
                       <th className="px-5 py-3 font-semibold text-xs uppercase tracking-wider text-slate-500 border-b border-slate-200">
                         Tanggal
                       </th>
+                      <th className="px-5 py-3 font-semibold text-xs uppercase tracking-wider text-slate-500 border-b border-slate-200 text-center">
+                        Foto jawaban
+                      </th>
                       <th className="px-5 py-3 font-semibold text-xs uppercase tracking-wider text-slate-500 border-b border-slate-200">
                         Soal (OCR)
+                      </th>
+
+                      <th className="px-5 py-3 font-semibold text-xs uppercase tracking-wider text-slate-500 border-b border-slate-200 text-center">
+                        Hasil Analisis
                       </th>
                       <th className="px-5 py-3 font-semibold text-xs uppercase tracking-wider text-slate-500 border-b border-slate-200 text-center">
                         Nilai
@@ -1092,33 +1342,82 @@ export default function SiswaDashboard() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
-                    {riwayat.map((item) => (
-                      <tr
-                        key={item.id}
-                        className="hover:bg-slate-50 transition-colors"
-                      >
-                        <td className="px-5 py-3.5 text-slate-500 whitespace-nowrap text-xs">
-                          {new Date(item.created_at).toLocaleDateString(
-                            "id-ID",
-                            { day: "numeric", month: "short", year: "numeric" },
-                          )}
-                        </td>
-                        <td className="px-5 py-3.5 font-mono text-slate-600 text-xs truncate max-w-xs">
-                          {item.ocr_result_text}
-                        </td>
-                        <td className="px-5 py-3.5 text-center">
-                          {item.nilai !== null ? (
-                            <span className="inline-block px-2.5 py-1 bg-indigo-100 text-indigo-700 font-bold rounded-full text-xs">
-                              {item.nilai}/100
-                            </span>
-                          ) : (
-                            <span className="inline-block px-2.5 py-1 bg-amber-100 text-amber-600 font-semibold rounded-full text-xs">
-                              Menunggu
-                            </span>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
+                    {riwayat.map((item) => {
+                      // Panggil fungsi pembaca array foto di sini agar kode di bawah lebih bersih
+                      const fotoUrls = getPhotoArray(item.image_url);
+                      const thumbnailFoto = fotoUrls[0]; // Ambil foto pertama untuk thumbnail
+
+                      return (
+                        <tr
+                          key={item.id}
+                          className="hover:bg-slate-50 transition-colors"
+                        >
+                          <td className="px-5 py-3.5 text-slate-500 whitespace-nowrap text-xs">
+                            {new Date(item.created_at).toLocaleDateString(
+                              "id-ID",
+                              {
+                                day: "numeric",
+                                month: "short",
+                                year: "numeric",
+                              },
+                            )}
+                          </td>
+
+                          <td className="px-5 py-3.5 text-center">
+                            {fotoUrls.length > 0 ? (
+                              // Menggunakan flex untuk menjajarkan foto, justify-center agar tetap di tengah,
+                              // dan flex-wrap agar jika fotonya terlalu banyak otomatis turun ke bawah (tidak merusak tabel)
+                              <div className="flex items-center justify-center gap-2 flex-wrap">
+                                {fotoUrls.map((url, index) => (
+                                  <img
+                                    key={index}
+                                    src={url}
+                                    alt={`Thumbnail Jawaban ${index + 1}`}
+                                    className="w-10 h-10 object-cover rounded cursor-pointer border border-slate-200 hover:opacity-75 transition-opacity"
+                                    onClick={() => setSelectedFoto(url)} // Klik foto mana saja, modal akan membesar sesuai foto tersebut
+                                  />
+                                ))}
+                              </div>
+                            ) : (
+                              <span className="text-xs text-slate-400">-</span>
+                            )}
+                          </td>
+
+                          <td className="px-5 py-3.5 font-mono text-slate-600 text-xs truncate max-w-xs">
+                            {item.ocr_result_text}
+                          </td>
+
+                          <td className="px-5 py-3.5 text-center">
+                            {item.analisis_pembelajaran ? (
+                              <button
+                                onClick={() =>
+                                  setSelectedAnalisis(
+                                    item.analisis_pembelajaran,
+                                  )
+                                }
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 font-semibold rounded-lg text-xs transition-colors"
+                              >
+                                Lihat Analisis AI
+                              </button>
+                            ) : (
+                              <span className="text-xs text-slate-400">-</span>
+                            )}
+                          </td>
+
+                          <td className="px-5 py-3.5 text-center">
+                            {item.nilai !== null ? (
+                              <span className="inline-block px-2.5 py-1 bg-indigo-100 text-indigo-700 font-bold rounded-full text-xs">
+                                {item.nilai}/100
+                              </span>
+                            ) : (
+                              <span className="inline-block px-2.5 py-1 bg-amber-100 text-amber-600 font-semibold rounded-full text-xs">
+                                Menunggu
+                              </span>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               )}

@@ -27,9 +27,9 @@ export default function Login() {
       localStorage.setItem("user", JSON.stringify(data.user));
 
       const routes = {
-        siswa: "/siswa/dashboard",
-        guru: "/guru/dashboard",
-        admin: "/admin/dashboard",
+        siswa: "/siswa",
+        guru: "/guru",
+        admin: "/admin",
       };
       navigate(routes[data.user.role] ?? "/");
     } catch (err) {
