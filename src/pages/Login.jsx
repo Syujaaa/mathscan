@@ -44,7 +44,7 @@ export default function Login() {
       <style>{`
         .login-root {
           min-height: 100dvh;
-          background: #f1f5f9;
+          background: #F5EFE7;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -57,7 +57,7 @@ export default function Login() {
           content: '';
           position: fixed;
           inset: 0;
-          background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+          background-image: radial-gradient(#E3D9C6 1px, transparent 1px);
           background-size: 24px 24px;
           pointer-events: none;
           z-index: 0;
@@ -81,9 +81,9 @@ export default function Login() {
         .login-brand-icon {
           width: 40px; height: 40px;
           border-radius: 10px;
-          background: #4f46e5;
+          background: #006266;
           display: flex; align-items: center; justify-content: center;
-          box-shadow: 0 4px 14px rgba(99,102,241,.35);
+          box-shadow: 0 4px 14px rgba(0,98,102,.35);
         }
         .login-brand-icon svg { width: 22px; height: 22px; color: #fff; }
         .login-brand-name {
@@ -92,12 +92,12 @@ export default function Login() {
           color: #1e293b;
           letter-spacing: -.02em;
         }
-        .login-brand-name span { color: #6366f1; }
+        .login-brand-name span { color: #006266; }
 
         /* ── Card ── */
         .login-card {
           background: #ffffff;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #E8DFCE;
           border-radius: 20px;
           box-shadow:
             0 1px 2px rgba(15,23,42,.04),
@@ -118,7 +118,7 @@ export default function Login() {
         }
         .login-card-sub {
           font-size: .82rem;
-          color: #94a3b8;
+          color: #A69C8C;
           margin-bottom: 1.75rem;
         }
 
@@ -127,15 +127,15 @@ export default function Login() {
           display: flex;
           align-items: flex-start;
           gap: .5rem;
-          background: #fef2f2;
-          border: 1px solid #fecaca;
+          background: #FFEEEC;
+          border: 1px solid #FFC7C4;
           border-radius: 10px;
           padding: .7rem .9rem;
           margin-bottom: 1.25rem;
         }
-        .login-error-icon { color: #ef4444; flex-shrink: 0; margin-top: 1px; }
+        .login-error-icon { color: #FF7675; flex-shrink: 0; margin-top: 1px; }
         .login-error-icon svg { width: 15px; height: 15px; }
-        .login-error-text { font-size: .8rem; color: #b91c1c; line-height: 1.45; }
+        .login-error-text { font-size: .8rem; color: #C1443F; line-height: 1.45; }
 
         /* ── Fields ── */
         .login-field { margin-bottom: 1rem; }
@@ -143,7 +143,7 @@ export default function Login() {
           display: block;
           font-size: .75rem;
           font-weight: 600;
-          color: #475569;
+          color: #5B5347;
           margin-bottom: .4rem;
           letter-spacing: .02em;
         }
@@ -151,7 +151,7 @@ export default function Login() {
         .login-input-icon {
           position: absolute; left: .8rem; top: 50%;
           transform: translateY(-50%);
-          color: #94a3b8; pointer-events: none;
+          color: #A69C8C; pointer-events: none;
           display: flex; align-items: center;
         }
         .login-input-icon svg { width: 15px; height: 15px; }
@@ -159,32 +159,32 @@ export default function Login() {
         .login-input {
           width: 100%;
           padding: .7rem .875rem .7rem 2.35rem;
-          border: 1px solid #e2e8f0;
+          border: 1px solid #E8DFCE;
           border-radius: 10px;
           font-size: .875rem;
           color: #0f172a;
-          background: #f8fafc;
+          background: #FBF8F3;
           outline: none;
           transition: border-color .15s, box-shadow .15s, background .15s;
           -webkit-appearance: none;
         }
-        .login-input::placeholder { color: #cbd5e1; }
+        .login-input::placeholder { color: #C9BFAC; }
         .login-input:focus {
-          border-color: #6366f1;
+          border-color: #006266;
           background: #fff;
-          box-shadow: 0 0 0 3px rgba(99,102,241,.15);
+          box-shadow: 0 0 0 3px rgba(0,98,102,.15);
         }
 
         .login-pw-toggle {
           position: absolute; right: .75rem; top: 50%;
           transform: translateY(-50%);
           background: none; border: none; cursor: pointer;
-          color: #94a3b8; padding: .2rem;
+          color: #A69C8C; padding: .2rem;
           display: flex; align-items: center;
           border-radius: 5px;
           transition: color .12s, background .12s;
         }
-        .login-pw-toggle:hover { color: #6366f1; background: #ede9fe; }
+        .login-pw-toggle:hover { color: #006266; background: #E0EEEE; }
         .login-pw-toggle svg { width: 15px; height: 15px; }
 
         /* ── Button ── */
@@ -194,19 +194,19 @@ export default function Login() {
           padding: .8rem;
           border: none;
           border-radius: 10px;
-          background: #6366f1;
+          background: #006266;
           color: #fff;
           font-size: .9rem;
           font-weight: 700;
           cursor: pointer;
           display: flex; align-items: center; justify-content: center; gap: .45rem;
           transition: background .15s, transform .1s, box-shadow .15s;
-          box-shadow: 0 2px 8px rgba(99,102,241,.3);
+          box-shadow: 0 2px 8px rgba(0,98,102,.3);
           letter-spacing: .01em;
         }
         .login-btn:hover:not(:disabled) {
-          background: #4f46e5;
-          box-shadow: 0 4px 16px rgba(99,102,241,.4);
+          background: #004D50;
+          box-shadow: 0 4px 16px rgba(0,98,102,.4);
           transform: translateY(-1px);
         }
         .login-btn:active:not(:disabled) { transform: translateY(0); box-shadow: none; }
@@ -225,13 +225,13 @@ export default function Login() {
         .login-footer {
           margin-top: 1.5rem;
           padding-top: 1.25rem;
-          border-top: 1px solid #f1f5f9;
+          border-top: 1px solid #EDE5D8;
           text-align: center;
           font-size: .75rem;
-          color: #94a3b8;
+          color: #A69C8C;
           line-height: 1.6;
         }
-        .login-footer strong { color: #64748b; font-weight: 600; }
+        .login-footer strong { color: #5B5347; font-weight: 600; }
       `}</style>
 
       <div className="login-root">

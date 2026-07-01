@@ -240,12 +240,12 @@ export default function AdminDashboard() {
       title: "Keluar dari sesi?",
       text: "Kamu perlu login kembali untuk mengakses dashboard.",
       icon: "question",
-      iconColor: "#6366f1",
+      iconColor: "#006266",
       showCancelButton: true,
       confirmButtonText: "Ya, Logout",
       cancelButtonText: "Batal",
-      confirmButtonColor: "#ef4444",
-      cancelButtonColor: "#6b7280",
+      confirmButtonColor: "#FF7675",
+      cancelButtonColor: "#94a3b8",
       reverseButtons: true,
       customClass: { popup: "rounded-2xl" },
     });
@@ -336,7 +336,7 @@ export default function AdminDashboard() {
           text: isEditMode
             ? `Data ${nama} telah berhasil disimpan.`
             : `Akun baru untuk ${nama} sudah aktif.`,
-          confirmButtonColor: "#6366f1",
+          confirmButtonColor: "#006266",
           confirmButtonText: "Oke",
           customClass: { popup: "rounded-2xl" },
         });
@@ -345,7 +345,7 @@ export default function AdminDashboard() {
           icon: "error",
           title: "Gagal menyimpan",
           text: data.error || "Terjadi kesalahan, coba lagi.",
-          confirmButtonColor: "#ef4444",
+          confirmButtonColor: "#FF7675",
           customClass: { popup: "rounded-2xl" },
         });
       }
@@ -354,7 +354,7 @@ export default function AdminDashboard() {
         icon: "error",
         title: "Koneksi gagal",
         text: "Tidak dapat terhubung ke server.",
-        confirmButtonColor: "#ef4444",
+        confirmButtonColor: "#FF7675",
         customClass: { popup: "rounded-2xl" },
       });
     } finally {
@@ -370,12 +370,12 @@ export default function AdminDashboard() {
         title: `Hapus "${namaUser}"?`,
         html: `<p class="text-gray-600 text-sm">Semua data pengerjaan milik <strong>${namaUser}</strong> akan ikut terhapus secara permanen.<br/>Tindakan ini tidak dapat dibatalkan.</p>`,
         icon: "warning",
-        iconColor: "#f59e0b",
+        iconColor: "#FF7675",
         showCancelButton: true,
         confirmButtonText: "Ya, Hapus Sekarang",
         cancelButtonText: "Batal",
-        confirmButtonColor: "#ef4444",
-        cancelButtonColor: "#6b7280",
+        confirmButtonColor: "#FF7675",
+        cancelButtonColor: "#94a3b8",
         reverseButtons: true,
         customClass: {
           popup: "rounded-2xl",
@@ -423,7 +423,7 @@ export default function AdminDashboard() {
   return (
     <>
       <style>{`
-        body { background: #f1f5f9; }
+        body { background: #F5EFE7; }
 
         /* ── DataTables tweaks ───────────────────────────────────────────── */
         .dataTables_wrapper .dataTables_filter input {
@@ -431,7 +431,7 @@ export default function AdminDashboard() {
           padding: .35rem .75rem; font-size: .875rem; outline: none; transition: border-color .15s;
         }
         .dataTables_wrapper .dataTables_filter input:focus {
-          border-color: #6366f1; box-shadow: 0 0 0 2px rgba(99,102,241,.15);
+          border-color: #006266; box-shadow: 0 0 0 2px rgba(0,98,102,.15);
         }
         .dataTables_wrapper .dataTables_length select {
           border: 1px solid #e2e8f0; border-radius: .5rem; padding: .35rem .5rem; font-size: .875rem;
@@ -441,19 +441,19 @@ export default function AdminDashboard() {
           margin: 0 2px; font-size: .8125rem;
         }
         .dataTables_wrapper .dataTables_paginate .paginate_button.current {
-          background: #6366f1 !important; color: #fff !important; border: none !important;
+          background: #006266 !important; color: #fff !important; border: none !important;
         }
         .dataTables_wrapper .dataTables_paginate .paginate_button:hover:not(.current) {
-          background: #ede9fe !important; color: #4f46e5 !important; border: none !important;
+          background: #E6F2F2 !important; color: #006266 !important; border: none !important;
         }
         .dataTables_wrapper .dataTables_info { font-size: .8125rem; color: #64748b; }
         table.dataTable thead th {
-          background: #f8fafc; color: #475569; font-size: .75rem; font-weight: 600;
+          background: #FAF6F0; color: #475569; font-size: .75rem; font-weight: 600;
           letter-spacing: .06em; text-transform: uppercase;
           border-bottom: 2px solid #e2e8f0 !important; padding: .875rem 1rem;
         }
         table.dataTable tbody td { padding: .875rem 1rem; border-bottom: 1px solid #f1f5f9; }
-        table.dataTable tbody tr:hover td { background: #f8fafc; }
+        table.dataTable tbody tr:hover td { background: #FAF6F0; }
         table.dataTable { border-collapse: collapse !important; }
 
         /* ── Badge styles (rendered inside DT cells) ─────────────────────── */
@@ -461,11 +461,11 @@ export default function AdminDashboard() {
           display: inline-flex; align-items: center; gap: .25rem;
           padding: .2rem .65rem; border-radius: 9999px; font-size: .7rem; font-weight: 700; border-width: 1px;
         }
-        .dt-badge-guru  { background:#f3e8ff; color:#6d28d9; border-color:#ddd6fe; }
-        .dt-badge-siswa { background:#e0f2fe; color:#0369a1; border-color:#bae6fd; }
+        .dt-badge-guru  { background:#E6F2F2; color:#006266; border-color:#B3D9DA; }
+        .dt-badge-siswa { background:#FFE8E7; color:#C0392B; border-color:#FFC4C2; }
         .dt-dot  { width:.375rem; height:.375rem; border-radius:50%; display:inline-block; }
-        .dt-dot-guru  { background:#7c3aed; }
-        .dt-dot-siswa { background:#0284c7; }
+        .dt-dot-guru  { background:#006266; }
+        .dt-dot-siswa { background:#FF7675; }
 
         /* ── Action buttons (rendered inside DT cells) ───────────────────── */
         .dt-actions { display:flex; align-items:center; justify-content:center; gap:.375rem; }
@@ -474,10 +474,10 @@ export default function AdminDashboard() {
           padding:.3rem .6rem; border-radius:.5rem; font-size:.75rem; font-weight:600;
           cursor:pointer; border-width:1px; transition:background .12s;
         }
-        .dt-btn-edit  { color:#92400e; background:#fffbeb; border-color:#fde68a; }
-        .dt-btn-edit:hover  { background:#fef3c7; }
-        .dt-btn-hapus { color:#991b1b; background:#fef2f2; border-color:#fecaca; }
-        .dt-btn-hapus:hover { background:#fee2e2; }
+        .dt-btn-edit  { color:#006266; background:#E6F2F2; border-color:#B3D9DA; }
+        .dt-btn-edit:hover  { background:#D0E8E8; }
+        .dt-btn-hapus { color:#C0392B; background:#FFE8E7; border-color:#FFC4C2; }
+        .dt-btn-hapus:hover { background:#FFD5D3; }
         .dt-icon { width:.75rem; height:.75rem; }
 
         /* ── SweetAlert2 toast ───────────────────────────────────────────── */
@@ -488,12 +488,12 @@ export default function AdminDashboard() {
         @keyframes fadeIn { from { opacity:0; transform:scale(.97); } to { opacity:1; transform:scale(1); } }
       `}</style>
 
-      <div className="min-h-screen bg-slate-100">
+      <div className="min-h-screen bg-[#F5EFE7]">
         {/* ── Navbar ──────────────────────────────────────────────────────── */}
         <header className="bg-white border-b border-slate-200 shadow-sm sticky top-0 z-30">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
             <div className="flex items-center gap-3 min-w-0">
-              <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center shrink-0">
+              <div className="w-8 h-8 rounded-lg bg-[#006266] flex items-center justify-center shrink-0">
                 <svg
                   className="w-4 h-4 text-white"
                   fill="none"
@@ -520,7 +520,7 @@ export default function AdminDashboard() {
             <div className="flex items-center gap-2">
               <button
                 onClick={openAddModal}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors shadow-sm"
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 text-sm font-semibold text-white bg-[#006266] hover:bg-[#004d50] rounded-lg transition-colors shadow-sm"
               >
                 <svg
                   className="w-4 h-4"
@@ -569,34 +569,37 @@ export default function AdminDashboard() {
               {
                 label: "Total Pengguna",
                 value: stats.total,
-                color: "indigo",
+                bg: "bg-[#006266]/10",
+                text: "text-[#006266]",
                 icon: "M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0",
                 span: "col-span-2 sm:col-span-1",
               },
               {
                 label: "Guru",
                 value: stats.guru,
-                color: "violet",
+                bg: "bg-[#006266]/10",
+                text: "text-[#006266]",
                 icon: "M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253",
                 span: "col-span-1",
               },
               {
                 label: "Siswa",
                 value: stats.siswa,
-                color: "sky",
+                bg: "bg-[#FF7675]/10",
+                text: "text-[#FF7675]",
                 icon: "M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z",
                 span: "col-span-1",
               },
-            ].map(({ label, value, color, icon, span }) => (
+            ].map(({ label, value, bg, text, icon, span }) => (
               <div
                 key={label}
                 className={`${span} bg-white rounded-xl border border-slate-200 shadow-sm p-4 flex items-center gap-3`}
               >
                 <div
-                  className={`w-10 h-10 rounded-lg bg-${color}-50 flex items-center justify-center shrink-0`}
+                  className={`w-10 h-10 rounded-lg ${bg} flex items-center justify-center shrink-0`}
                 >
                   <svg
-                    className={`w-5 h-5 text-${color}-600`}
+                    className={`w-5 h-5 ${text}`}
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -656,10 +659,10 @@ export default function AdminDashboard() {
             <div className="px-6 pt-6 pb-4 border-b border-slate-100 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div
-                  className={`w-9 h-9 rounded-xl flex items-center justify-center ${isEditMode ? "bg-amber-50" : "bg-indigo-50"}`}
+                  className={`w-9 h-9 rounded-xl flex items-center justify-center ${isEditMode ? "bg-[#FF7675]/10" : "bg-[#006266]/10"}`}
                 >
                   <svg
-                    className={`w-5 h-5 ${isEditMode ? "text-amber-600" : "text-indigo-600"}`}
+                    className={`w-5 h-5 ${isEditMode ? "text-[#FF7675]" : "text-[#006266]"}`}
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -742,7 +745,7 @@ export default function AdminDashboard() {
                     value={val}
                     onChange={(e) => set(e.target.value)}
                     placeholder={ph}
-                    className="w-full px-3 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent placeholder:text-slate-300 transition"
+                    className="w-full px-3 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#006266]/40 focus:border-transparent placeholder:text-slate-300 transition"
                   />
                 </div>
               ))}
@@ -766,7 +769,7 @@ export default function AdminDashboard() {
                       ? "Masukkan password baru untuk mereset"
                       : "Minimal 6 karakter"
                   }
-                  className="w-full px-3 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent placeholder:text-slate-300 transition"
+                  className="w-full px-3 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#006266]/40 focus:border-transparent placeholder:text-slate-300 transition"
                 />
               </div>
 
@@ -777,7 +780,7 @@ export default function AdminDashboard() {
                 <select
                   value={role}
                   onChange={(e) => setRole(e.target.value)}
-                  className="w-full px-3 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent bg-white transition"
+                  className="w-full px-3 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#006266]/40 focus:border-transparent bg-white transition"
                 >
                   <option value="siswa">Siswa</option>
                   <option value="guru">Guru</option>
@@ -795,7 +798,7 @@ export default function AdminDashboard() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className={`px-5 py-2.5 text-sm font-semibold text-white rounded-xl transition-colors shadow-sm ${isSubmitting ? "bg-indigo-400 cursor-not-allowed" : "bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800"}`}
+                  className={`px-5 py-2.5 text-sm font-semibold text-white rounded-xl transition-colors shadow-sm ${isSubmitting ? "bg-[#006266]/50 cursor-not-allowed" : "bg-[#006266] hover:bg-[#004d50] active:bg-[#003d3f]"}`}
                 >
                   {isSubmitting ? (
                     <span className="inline-flex items-center gap-1.5">
