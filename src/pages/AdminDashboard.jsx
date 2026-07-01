@@ -240,7 +240,7 @@ export default function AdminDashboard() {
       title: "Keluar dari sesi?",
       text: "Kamu perlu login kembali untuk mengakses dashboard.",
       icon: "question",
-      iconColor: "#006266",
+      iconColor: "#525355",
       showCancelButton: true,
       confirmButtonText: "Ya, Logout",
       cancelButtonText: "Batal",
@@ -336,7 +336,7 @@ export default function AdminDashboard() {
           text: isEditMode
             ? `Data ${nama} telah berhasil disimpan.`
             : `Akun baru untuk ${nama} sudah aktif.`,
-          confirmButtonColor: "#006266",
+          confirmButtonColor: "#525355",
           confirmButtonText: "Oke",
           customClass: { popup: "rounded-2xl" },
         });
@@ -431,7 +431,7 @@ export default function AdminDashboard() {
           padding: .35rem .75rem; font-size: .875rem; outline: none; transition: border-color .15s;
         }
         .dataTables_wrapper .dataTables_filter input:focus {
-          border-color: #006266; box-shadow: 0 0 0 2px rgba(0,98,102,.15);
+          border-color: #525355; box-shadow: 0 0 0 2px rgba(82,83,85,.15);
         }
         .dataTables_wrapper .dataTables_length select {
           border: 1px solid #e2e8f0; border-radius: .5rem; padding: .35rem .5rem; font-size: .875rem;
@@ -441,10 +441,10 @@ export default function AdminDashboard() {
           margin: 0 2px; font-size: .8125rem;
         }
         .dataTables_wrapper .dataTables_paginate .paginate_button.current {
-          background: #006266 !important; color: #fff !important; border: none !important;
+          background: #525355 !important; color: #fff !important; border: none !important;
         }
         .dataTables_wrapper .dataTables_paginate .paginate_button:hover:not(.current) {
-          background: #E6F2F2 !important; color: #006266 !important; border: none !important;
+          background: #ECECED !important; color: #525355 !important; border: none !important;
         }
         .dataTables_wrapper .dataTables_info { font-size: .8125rem; color: #64748b; }
         table.dataTable thead th {
@@ -461,10 +461,10 @@ export default function AdminDashboard() {
           display: inline-flex; align-items: center; gap: .25rem;
           padding: .2rem .65rem; border-radius: 9999px; font-size: .7rem; font-weight: 700; border-width: 1px;
         }
-        .dt-badge-guru  { background:#E6F2F2; color:#006266; border-color:#B3D9DA; }
+        .dt-badge-guru  { background:#ECECED; color:#525355; border-color:#CBCBCE; }
         .dt-badge-siswa { background:#FFE8E7; color:#C0392B; border-color:#FFC4C2; }
         .dt-dot  { width:.375rem; height:.375rem; border-radius:50%; display:inline-block; }
-        .dt-dot-guru  { background:#006266; }
+        .dt-dot-guru  { background:#525355; }
         .dt-dot-siswa { background:#FF7675; }
 
         /* ── Action buttons (rendered inside DT cells) ───────────────────── */
@@ -474,8 +474,8 @@ export default function AdminDashboard() {
           padding:.3rem .6rem; border-radius:.5rem; font-size:.75rem; font-weight:600;
           cursor:pointer; border-width:1px; transition:background .12s;
         }
-        .dt-btn-edit  { color:#006266; background:#E6F2F2; border-color:#B3D9DA; }
-        .dt-btn-edit:hover  { background:#D0E8E8; }
+        .dt-btn-edit  { color:#525355; background:#ECECED; border-color:#CBCBCE; }
+        .dt-btn-edit:hover  { background:#DCDCDD; }
         .dt-btn-hapus { color:#C0392B; background:#FFE8E7; border-color:#FFC4C2; }
         .dt-btn-hapus:hover { background:#FFD5D3; }
         .dt-icon { width:.75rem; height:.75rem; }
@@ -493,7 +493,7 @@ export default function AdminDashboard() {
         <header className="bg-white border-b border-slate-200 shadow-sm sticky top-0 z-30">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
             <div className="flex items-center gap-3 min-w-0">
-              <div className="w-8 h-8 rounded-lg bg-[#006266] flex items-center justify-center shrink-0">
+              <div className="w-8 h-8 rounded-lg bg-[#525355] flex items-center justify-center shrink-0">
                 <svg
                   className="w-4 h-4 text-white"
                   fill="none"
@@ -520,7 +520,7 @@ export default function AdminDashboard() {
             <div className="flex items-center gap-2">
               <button
                 onClick={openAddModal}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 text-sm font-semibold text-white bg-[#006266] hover:bg-[#004d50] rounded-lg transition-colors shadow-sm"
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 text-sm font-semibold text-white bg-[#525355] hover:bg-[#404143] rounded-lg transition-colors shadow-sm"
               >
                 <svg
                   className="w-4 h-4"
@@ -569,16 +569,16 @@ export default function AdminDashboard() {
               {
                 label: "Total Pengguna",
                 value: stats.total,
-                bg: "bg-[#006266]/10",
-                text: "text-[#006266]",
+                bg: "bg-[#525355]/10",
+                text: "text-[#525355]",
                 icon: "M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0",
                 span: "col-span-2 sm:col-span-1",
               },
               {
                 label: "Guru",
                 value: stats.guru,
-                bg: "bg-[#006266]/10",
-                text: "text-[#006266]",
+                bg: "bg-[#525355]/10",
+                text: "text-[#525355]",
                 icon: "M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253",
                 span: "col-span-1",
               },
@@ -659,10 +659,10 @@ export default function AdminDashboard() {
             <div className="px-6 pt-6 pb-4 border-b border-slate-100 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div
-                  className={`w-9 h-9 rounded-xl flex items-center justify-center ${isEditMode ? "bg-[#FF7675]/10" : "bg-[#006266]/10"}`}
+                  className={`w-9 h-9 rounded-xl flex items-center justify-center ${isEditMode ? "bg-[#FF7675]/10" : "bg-[#525355]/10"}`}
                 >
                   <svg
-                    className={`w-5 h-5 ${isEditMode ? "text-[#FF7675]" : "text-[#006266]"}`}
+                    className={`w-5 h-5 ${isEditMode ? "text-[#FF7675]" : "text-[#525355]"}`}
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -745,7 +745,7 @@ export default function AdminDashboard() {
                     value={val}
                     onChange={(e) => set(e.target.value)}
                     placeholder={ph}
-                    className="w-full px-3 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#006266]/40 focus:border-transparent placeholder:text-slate-300 transition"
+                    className="w-full px-3 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#525355]/40 focus:border-transparent placeholder:text-slate-300 transition"
                   />
                 </div>
               ))}
@@ -769,7 +769,7 @@ export default function AdminDashboard() {
                       ? "Masukkan password baru untuk mereset"
                       : "Minimal 6 karakter"
                   }
-                  className="w-full px-3 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#006266]/40 focus:border-transparent placeholder:text-slate-300 transition"
+                  className="w-full px-3 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#525355]/40 focus:border-transparent placeholder:text-slate-300 transition"
                 />
               </div>
 
@@ -780,7 +780,7 @@ export default function AdminDashboard() {
                 <select
                   value={role}
                   onChange={(e) => setRole(e.target.value)}
-                  className="w-full px-3 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#006266]/40 focus:border-transparent bg-white transition"
+                  className="w-full px-3 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#525355]/40 focus:border-transparent bg-white transition"
                 >
                   <option value="siswa">Siswa</option>
                   <option value="guru">Guru</option>
@@ -798,7 +798,7 @@ export default function AdminDashboard() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className={`px-5 py-2.5 text-sm font-semibold text-white rounded-xl transition-colors shadow-sm ${isSubmitting ? "bg-[#006266]/50 cursor-not-allowed" : "bg-[#006266] hover:bg-[#004d50] active:bg-[#003d3f]"}`}
+                  className={`px-5 py-2.5 text-sm font-semibold text-white rounded-xl transition-colors shadow-sm ${isSubmitting ? "bg-[#525355]/50 cursor-not-allowed" : "bg-[#525355] hover:bg-[#404143] active:bg-[#333435]"}`}
                 >
                   {isSubmitting ? (
                     <span className="inline-flex items-center gap-1.5">

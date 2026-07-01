@@ -43,7 +43,7 @@ export default function Login() {
     <>
       <style>{`
         .login-root {
-          min-height: 100dvh;
+          min-height: calc(100dvh - 60px);
           background: #F5EFE7;
           display: flex;
           align-items: center;
@@ -81,9 +81,9 @@ export default function Login() {
         .login-brand-icon {
           width: 40px; height: 40px;
           border-radius: 10px;
-          background: #006266;
+          background: #525355;
           display: flex; align-items: center; justify-content: center;
-          box-shadow: 0 4px 14px rgba(0,98,102,.35);
+          box-shadow: 0 4px 14px rgba(82,83,85,.35);
         }
         .login-brand-icon svg { width: 22px; height: 22px; color: #fff; }
         .login-brand-name {
@@ -92,7 +92,7 @@ export default function Login() {
           color: #1e293b;
           letter-spacing: -.02em;
         }
-        .login-brand-name span { color: #006266; }
+        .login-brand-name span { color: #525355; }
 
         /* ── Card ── */
         .login-card {
@@ -170,9 +170,9 @@ export default function Login() {
         }
         .login-input::placeholder { color: #C9BFAC; }
         .login-input:focus {
-          border-color: #006266;
+          border-color: #525355;
           background: #fff;
-          box-shadow: 0 0 0 3px rgba(0,98,102,.15);
+          box-shadow: 0 0 0 3px rgba(82,83,85,.15);
         }
 
         .login-pw-toggle {
@@ -184,7 +184,7 @@ export default function Login() {
           border-radius: 5px;
           transition: color .12s, background .12s;
         }
-        .login-pw-toggle:hover { color: #006266; background: #E0EEEE; }
+        .login-pw-toggle:hover { color: #525355; background: #E7E7E8; }
         .login-pw-toggle svg { width: 15px; height: 15px; }
 
         /* ── Button ── */
@@ -194,19 +194,19 @@ export default function Login() {
           padding: .8rem;
           border: none;
           border-radius: 10px;
-          background: #006266;
+          background: #525355;
           color: #fff;
           font-size: .9rem;
           font-weight: 700;
           cursor: pointer;
           display: flex; align-items: center; justify-content: center; gap: .45rem;
           transition: background .15s, transform .1s, box-shadow .15s;
-          box-shadow: 0 2px 8px rgba(0,98,102,.3);
+          box-shadow: 0 2px 8px rgba(82,83,85,.3);
           letter-spacing: .01em;
         }
         .login-btn:hover:not(:disabled) {
-          background: #004D50;
-          box-shadow: 0 4px 16px rgba(0,98,102,.4);
+          background: #3F4042;
+          box-shadow: 0 4px 16px rgba(82,83,85,.4);
           transform: translateY(-1px);
         }
         .login-btn:active:not(:disabled) { transform: translateY(0); box-shadow: none; }

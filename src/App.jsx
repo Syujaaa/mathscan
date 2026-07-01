@@ -65,35 +65,37 @@ function App() {
           </Routes>
         </main>
 
-        {/* Komponen Copyrights (Footer) */}
-        <footer style={{ 
-          textAlign: "center", 
-          padding: "1rem", 
-          fontSize: "0.75rem", 
-          color: "rgba(0, 98, 102, 0.65)", 
-          borderTop: "1px solid rgba(0, 98, 102, 0.1)", 
-          letterSpacing: "0.025em"
-        }}>
+        <footer
+          style={{
+            marginTop: "auto",
+            textAlign: "center",
+            padding: "1rem",
+            fontSize: "0.75rem",
+            color: "rgba(82, 83, 85, 0.8)",
+            borderTop: "1px solid rgba(82, 83, 85, 0.15)",
+            backgroundColor: "#ffffff",
+            letterSpacing: "0.025em",
+          }}
+        >
           <div>
             &copy; {new Date().getFullYear()}{" "}
-            <a 
-              href="https://farrassyuja.my.id" 
-              target="_blank" 
+            <a
+              href="https://farrassyuja.my.id"
+              target="_blank"
               rel="noopener noreferrer"
-              style={{ 
-                color: "#FF7675", // Menggunakan warna pink kemerahan agar langsung mencolok
-                textDecoration: "underline", // Menandakan dengan jelas bahwa ini adalah link
-                textUnderlineOffset: "3px", // Memberi jarak sedikit antara teks dan garis bawah agar rapi
-                fontWeight: "bold", // Teks ditebalkan
-                transition: "all 0.3s ease" // Animasi transisi yang halus
+              style={{
+                color: "#525355",
+                textDecoration: "underline",
+                textUnderlineOffset: "3px",
+                fontWeight: "bold",
+                transition: "all 0.3s ease",
               }}
-              // Berubah menjadi warna hijau tua dan tanpa garis bawah saat disorot kursor
               onMouseEnter={(e) => {
-                e.target.style.color = "#006266";
+                e.target.style.color = "#707174";
                 e.target.style.textDecoration = "none";
               }}
               onMouseLeave={(e) => {
-                e.target.style.color = "#FF7675";
+                e.target.style.color = "#525355";
                 e.target.style.textDecoration = "underline";
               }}
             >

@@ -148,7 +148,7 @@ const confirm = (title, text, confirmText = "Ya, lanjutkan") =>
     text,
     icon: "warning",
     showCancelButton: true,
-    confirmButtonColor: "#006266",
+    confirmButtonColor: "#525355",
     cancelButtonColor: "#94a3b8",
     confirmButtonText: confirmText,
     cancelButtonText: "Batal",
@@ -566,7 +566,7 @@ export default function SiswaDashboard() {
 
   // ── Render ──────────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-[#F5EFE7] font-sans">
+    <div className="h-full bg-[#F5EFE7] font-sans">
       {selectedAnalisis && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
@@ -776,7 +776,7 @@ export default function SiswaDashboard() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
             {/* Logo mark */}
-            <div className="w-8 h-8 rounded-lg bg-[#006266] flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-[#525355] flex items-center justify-center">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="white">
                 <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
               </svg>
@@ -794,7 +794,7 @@ export default function SiswaDashboard() {
                 onClick={() => setActiveTab(id)}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                   activeTab === id
-                    ? "bg-[#006266]/10 text-[#006266]"
+                    ? "bg-[#525355]/10 text-[#525355]"
                     : "text-slate-500 hover:text-slate-800 hover:bg-[#F5EFE7]"
                 }`}
               >
@@ -818,7 +818,7 @@ export default function SiswaDashboard() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 pb-24 md:pb-8">
         {/* Active assignment ribbon (only on scan tab) */}
         {activeTab === "scan" && activeAssignmentId && (
-          <div className="mb-5 flex items-center gap-3 p-3 bg-[#006266] text-white rounded-xl shadow-sm">
+          <div className="mb-5 flex items-center gap-3 p-3 bg-[#525355] text-white rounded-xl shadow-sm">
             <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center flex-shrink-0">
               <IconScan size={16} />
             </div>
@@ -839,7 +839,7 @@ export default function SiswaDashboard() {
             {/* Empty state — belum pilih tugas */}
             {!activeAssignmentId ? (
               <div className="flex flex-col items-center justify-center py-24 px-6 text-center">
-                <div className="w-20 h-20 bg-[#006266]/10 rounded-2xl flex items-center justify-center mb-6">
+                <div className="w-20 h-20 bg-[#525355]/10 rounded-2xl flex items-center justify-center mb-6">
                   <IconScan size={36} />
                 </div>
                 <h2 className="text-xl font-bold text-slate-800 mb-2">
@@ -852,7 +852,7 @@ export default function SiswaDashboard() {
                 </p>
                 <button
                   onClick={() => setActiveTab("kelas")}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#006266] text-white rounded-xl font-semibold hover:bg-[#004a4d] transition-colors shadow-sm"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#525355] text-white rounded-xl font-semibold hover:bg-[#3F4042] transition-colors shadow-sm"
                 >
                   Lihat Kelas Saya <IconArrow size={16} />
                 </button>
@@ -880,8 +880,8 @@ export default function SiswaDashboard() {
                       <form onSubmit={handleScan} className="space-y-5">
                         {/* Drop zone */}
                         <label className="block cursor-pointer group">
-                          <div className="border-2 border-dashed border-slate-200 group-hover:border-[#006266]/60 rounded-xl p-8 text-center transition-colors bg-[#F5EFE7] group-hover:bg-[#006266]/10">
-                            <div className="flex flex-col items-center gap-2 text-slate-400 group-hover:text-[#006266] transition-colors">
+                          <div className="border-2 border-dashed border-slate-200 group-hover:border-[#525355]/60 rounded-xl p-8 text-center transition-colors bg-[#F5EFE7] group-hover:bg-[#525355]/10">
+                            <div className="flex flex-col items-center gap-2 text-slate-400 group-hover:text-[#525355] transition-colors">
                               <IconUpload size={28} />
                               <p className="font-semibold text-sm">
                                 Klik untuk pilih foto
@@ -891,7 +891,7 @@ export default function SiswaDashboard() {
                               </p>
                             </div>
                             {images.length > 0 && (
-                              <p className="mt-3 text-sm font-semibold text-[#006266]">
+                              <p className="mt-3 text-sm font-semibold text-[#525355]">
                                 {images.length} foto terpilih ✓
                               </p>
                             )}
@@ -929,7 +929,7 @@ export default function SiswaDashboard() {
                           className={`w-full py-3 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 ${
                             loadingScan
                               ? "bg-slate-200 text-slate-400 cursor-not-allowed"
-                              : "bg-[#006266] hover:bg-[#004a4d] text-white shadow-sm hover:shadow-md"
+                              : "bg-[#525355] hover:bg-[#3F4042] text-white shadow-sm hover:shadow-md"
                           }`}
                         >
                           {loadingScan ? (
@@ -983,18 +983,18 @@ export default function SiswaDashboard() {
                         {/* Nilai guru */}
                         {submissionDetail?.nilai !== null &&
                           submissionDetail?.nilai !== undefined && (
-                            <div className="p-4 bg-[#006266]/10 border border-[#006266]/25 rounded-xl">
-                              <p className="text-xs font-bold uppercase tracking-widest text-[#006266]/60 mb-1">
+                            <div className="p-4 bg-[#525355]/10 border border-[#525355]/25 rounded-xl">
+                              <p className="text-xs font-bold uppercase tracking-widest text-[#525355]/60 mb-1">
                                 Penilaian Guru
                               </p>
-                              <p className="text-3xl font-black text-[#006266]">
+                              <p className="text-3xl font-black text-[#525355]">
                                 {submissionDetail.nilai}
-                                <span className="text-base font-bold text-[#006266]/60">
+                                <span className="text-base font-bold text-[#525355]/60">
                                   /100
                                 </span>
                               </p>
                               {submissionDetail.catatan_guru && (
-                                <p className="text-sm text-[#004a4d] mt-2 italic border-t border-[#006266]/25 pt-2">
+                                <p className="text-sm text-[#3F4042] mt-2 italic border-t border-[#525355]/25 pt-2">
                                   "{submissionDetail.catatan_guru}"
                                 </p>
                               )}
@@ -1136,11 +1136,11 @@ export default function SiswaDashboard() {
                     placeholder="48K..."
                     value={kodeKelas}
                     onChange={(e) => setKodeKelas(e.target.value.toUpperCase())}
-                    className="w-full px-4 py-2.5 border border-slate-200 rounded-xl font-mono uppercase text-sm bg-[#F5EFE7] focus:outline-none focus:ring-2 focus:ring-[#006266]/60 focus:border-transparent"
+                    className="w-full px-4 py-2.5 border border-slate-200 rounded-xl font-mono uppercase text-sm bg-[#F5EFE7] focus:outline-none focus:ring-2 focus:ring-[#525355]/60 focus:border-transparent"
                   />
                   <button
                     type="submit"
-                    className="w-full py-2.5 bg-[#006266] hover:bg-[#004a4d] text-white rounded-xl font-semibold text-sm transition-colors"
+                    className="w-full py-2.5 bg-[#525355] hover:bg-[#3F4042] text-white rounded-xl font-semibold text-sm transition-colors"
                   >
                     Gabung Sekarang
                   </button>
@@ -1162,7 +1162,7 @@ export default function SiswaDashboard() {
                           onClick={() => setSelectedClass(cls.id)}
                           className={`w-full text-left p-3 rounded-xl border transition-all ${
                             selectedClass === cls.id
-                              ? "border-[#006266]/60 bg-[#006266]/10 shadow-sm"
+                              ? "border-[#525355]/60 bg-[#525355]/10 shadow-sm"
                               : "border-slate-200 hover:border-slate-300 hover:bg-[#F5EFE7]"
                           }`}
                         >
@@ -1231,7 +1231,7 @@ export default function SiswaDashboard() {
                                   ? "border-emerald-200 bg-emerald-50"
                                   : isWaiting
                                     ? "border-[#FF7675]/40  bg-[#FF7675]/10"
-                                    : "border-slate-200  bg-white hover:border-[#006266]/30 hover:bg-[#006266]/5"
+                                    : "border-slate-200  bg-white hover:border-[#525355]/30 hover:bg-[#525355]/5"
                               }`}
                             >
                               <div className="flex items-start justify-between gap-3">
@@ -1266,7 +1266,7 @@ export default function SiswaDashboard() {
                                     ? "bg-emerald-600 hover:bg-emerald-700 text-white"
                                     : isWaiting
                                       ? "bg-[#FF7675]  hover:bg-[#e56665]  text-white"
-                                      : "bg-[#006266] hover:bg-[#004a4d]  text-white"
+                                      : "bg-[#525355] hover:bg-[#3F4042]  text-white"
                                 }`}
                               >
                                 {hasNilai ? (
@@ -1395,7 +1395,7 @@ export default function SiswaDashboard() {
                                     item.analisis_pembelajaran,
                                   )
                                 }
-                                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#006266]/10 text-[#006266] hover:bg-[#006266]/20 font-semibold rounded-lg text-xs transition-colors"
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#525355]/10 text-[#525355] hover:bg-[#525355]/20 font-semibold rounded-lg text-xs transition-colors"
                               >
                                 Lihat Analisis AI
                               </button>
@@ -1406,7 +1406,7 @@ export default function SiswaDashboard() {
 
                           <td className="px-5 py-3.5 text-center">
                             {item.nilai !== null ? (
-                              <span className="inline-block px-2.5 py-1 bg-[#006266]/15 text-[#006266] font-bold rounded-full text-xs">
+                              <span className="inline-block px-2.5 py-1 bg-[#525355]/15 text-[#525355] font-bold rounded-full text-xs">
                                 {item.nilai}/100
                               </span>
                             ) : (
@@ -1452,7 +1452,7 @@ export default function SiswaDashboard() {
                       <select
                         value={latihanTopik}
                         onChange={(e) => setLatihanTopik(e.target.value)}
-                        className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-[#F5EFE7] focus:outline-none focus:ring-2 focus:ring-[#006266]/60"
+                        className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-[#F5EFE7] focus:outline-none focus:ring-2 focus:ring-[#525355]/60"
                       >
                         {TOPIK_LIST.map((t) => (
                           <option key={t} value={t}>
@@ -1474,8 +1474,8 @@ export default function SiswaDashboard() {
                             onClick={() => setLatihanTingkat(t)}
                             className={`py-2 rounded-xl text-sm font-semibold border transition-all ${
                               latihanTingkat === t
-                                ? "bg-[#006266] text-white border-[#006266]"
-                                : "bg-[#F5EFE7] text-slate-500 border-slate-200 hover:border-[#006266]/40"
+                                ? "bg-[#525355] text-white border-[#525355]"
+                                : "bg-[#F5EFE7] text-slate-500 border-slate-200 hover:border-[#525355]/40"
                             }`}
                           >
                             {t}
@@ -1490,7 +1490,7 @@ export default function SiswaDashboard() {
                       className={`w-full py-3 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 ${
                         loadingSoal
                           ? "bg-slate-200 text-slate-400 cursor-not-allowed"
-                          : "bg-[#006266] hover:bg-[#004a4d] text-white shadow-sm hover:shadow-md"
+                          : "bg-[#525355] hover:bg-[#3F4042] text-white shadow-sm hover:shadow-md"
                       }`}
                     >
                       {loadingSoal ? (
@@ -1526,11 +1526,11 @@ export default function SiswaDashboard() {
                 ) : (
                   <>
                     {/* Soal yang dibuat AI */}
-                    <div className="p-4 bg-[#006266]/10 border border-[#006266]/25 rounded-xl">
-                      <p className="text-xs font-bold uppercase tracking-widest text-[#006266]/60 mb-2">
+                    <div className="p-4 bg-[#525355]/10 border border-[#525355]/25 rounded-xl">
+                      <p className="text-xs font-bold uppercase tracking-widest text-[#525355]/60 mb-2">
                         Soal · {latihanTopik} ({latihanTingkat})
                       </p>
-                      <p className="text-sm text-[#004a4d] whitespace-pre-wrap leading-relaxed">
+                      <p className="text-sm text-[#3F4042] whitespace-pre-wrap leading-relaxed">
                         {latihanSoal}
                       </p>
                     </div>
@@ -1541,8 +1541,8 @@ export default function SiswaDashboard() {
                         className="space-y-5"
                       >
                         <label className="block cursor-pointer group">
-                          <div className="border-2 border-dashed border-slate-200 group-hover:border-[#006266]/60 rounded-xl p-8 text-center transition-colors bg-[#F5EFE7] group-hover:bg-[#006266]/10">
-                            <div className="flex flex-col items-center gap-2 text-slate-400 group-hover:text-[#006266] transition-colors">
+                          <div className="border-2 border-dashed border-slate-200 group-hover:border-[#525355]/60 rounded-xl p-8 text-center transition-colors bg-[#F5EFE7] group-hover:bg-[#525355]/10">
+                            <div className="flex flex-col items-center gap-2 text-slate-400 group-hover:text-[#525355] transition-colors">
                               <IconUpload size={28} />
                               <p className="font-semibold text-sm">
                                 Klik untuk pilih foto jawaban
@@ -1552,7 +1552,7 @@ export default function SiswaDashboard() {
                               </p>
                             </div>
                             {latihanImages.length > 0 && (
-                              <p className="mt-3 text-sm font-semibold text-[#006266]">
+                              <p className="mt-3 text-sm font-semibold text-[#525355]">
                                 {latihanImages.length} foto terpilih ✓
                               </p>
                             )}
@@ -1597,7 +1597,7 @@ export default function SiswaDashboard() {
                             className={`flex-1 py-3 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 ${
                               loadingLatihanScan
                                 ? "bg-slate-200 text-slate-400 cursor-not-allowed"
-                                : "bg-[#006266] hover:bg-[#004a4d] text-white shadow-sm hover:shadow-md"
+                                : "bg-[#525355] hover:bg-[#3F4042] text-white shadow-sm hover:shadow-md"
                             }`}
                           >
                             {loadingLatihanScan ? (
@@ -1632,7 +1632,7 @@ export default function SiswaDashboard() {
                     ) : (
                       <button
                         onClick={handleSoalBaru}
-                        className="w-full py-3 rounded-xl font-bold text-sm bg-[#006266] hover:bg-[#004a4d] text-white transition-all flex items-center justify-center gap-2"
+                        className="w-full py-3 rounded-xl font-bold text-sm bg-[#525355] hover:bg-[#3F4042] text-white transition-all flex items-center justify-center gap-2"
                       >
                         <IconSparkle size={16} /> Coba Soal Baru
                       </button>
@@ -1657,13 +1657,13 @@ export default function SiswaDashboard() {
                   <div className="p-6 space-y-5">
                     {latihanResult.nilai !== null &&
                       latihanResult.nilai !== undefined && (
-                        <div className="p-4 bg-[#006266]/10 border border-[#006266]/25 rounded-xl text-center">
-                          <p className="text-xs font-bold uppercase tracking-widest text-[#006266]/60 mb-1">
+                        <div className="p-4 bg-[#525355]/10 border border-[#525355]/25 rounded-xl text-center">
+                          <p className="text-xs font-bold uppercase tracking-widest text-[#525355]/60 mb-1">
                             Nilai Kamu
                           </p>
-                          <p className="text-4xl font-black text-[#006266]">
+                          <p className="text-4xl font-black text-[#525355]">
                             {latihanResult.nilai}
-                            <span className="text-base font-bold text-[#006266]/60">
+                            <span className="text-base font-bold text-[#525355]/60">
                               /100
                             </span>
                           </p>
@@ -1726,7 +1726,7 @@ export default function SiswaDashboard() {
               onClick={() => setActiveTab(id)}
               className={`flex-1 flex flex-col items-center gap-1 py-3 text-xs font-medium transition-colors ${
                 activeTab === id
-                  ? "text-[#006266]"
+                  ? "text-[#525355]"
                   : "text-slate-400 hover:text-slate-600"
               }`}
             >

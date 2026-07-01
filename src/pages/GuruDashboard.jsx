@@ -91,7 +91,7 @@ const confirm = (title, text, confirmText = "Ya, lanjutkan") =>
     text,
     icon: "warning",
     showCancelButton: true,
-    confirmButtonColor: "#006266",
+    confirmButtonColor: "#525355",
     cancelButtonColor: "#94a3b8",
     confirmButtonText: confirmText,
     cancelButtonText: "Batal",
@@ -967,7 +967,7 @@ export default function GuruDashboard() {
       <header className="bg-white border-b border-slate-200 sticky top-0 z-30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-[#006266] flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-[#525355] flex items-center justify-center">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="white">
                 <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
               </svg>
@@ -976,7 +976,7 @@ export default function GuruDashboard() {
               <span className="text-base font-bold text-slate-800 tracking-tight">
                 MathScan
               </span>
-              <span className="ml-2 text-xs font-medium text-[#006266] bg-[#006266]/10 px-2 py-0.5 rounded-full">
+              <span className="ml-2 text-xs font-medium text-[#525355] bg-[#525355]/10 px-2 py-0.5 rounded-full">
                 Guru
               </span>
             </div>
@@ -990,7 +990,7 @@ export default function GuruDashboard() {
                 onClick={() => setActiveTab(id)}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                   activeTab === id
-                    ? "bg-[#006266]/10 text-[#006266]"
+                    ? "bg-[#525355]/10 text-[#525355]"
                     : "text-slate-500 hover:text-slate-800 hover:bg-[#F5EFE7]"
                 }`}
               >
@@ -1024,8 +1024,8 @@ export default function GuruDashboard() {
                   onClick={() => setSelectedClassId(cls.id)}
                   className={`whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
                     selectedClassId === cls.id
-                      ? "bg-[#006266] text-white border-[#006266] shadow-sm"
-                      : "bg-white text-slate-600 border-slate-200 hover:border-[#006266]/40 hover:text-[#006266]"
+                      ? "bg-[#525355] text-white border-[#525355] shadow-sm"
+                      : "bg-white text-slate-600 border-slate-200 hover:border-[#525355]/40 hover:text-[#525355]"
                   }`}
                 >
                   {cls.nama_kelas}
@@ -1065,7 +1065,7 @@ export default function GuruDashboard() {
                       value={namaKelas}
                       onChange={(e) => setNamaKelas(e.target.value)}
                       placeholder="Contoh: Matematika 10A"
-                      className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-[#F5EFE7] focus:outline-none focus:ring-2 focus:ring-[#006266]/60 focus:border-transparent"
+                      className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-[#F5EFE7] focus:outline-none focus:ring-2 focus:ring-[#525355]/60 focus:border-transparent"
                     />
                   </div>
                   <div>
@@ -1078,12 +1078,12 @@ export default function GuruDashboard() {
                       rows={3}
                       onChange={(e) => setDeskripsiKelas(e.target.value)}
                       placeholder="Deskripsi singkat kelas..."
-                      className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-[#F5EFE7] focus:outline-none focus:ring-2 focus:ring-[#006266]/60 focus:border-transparent resize-none"
+                      className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-[#F5EFE7] focus:outline-none focus:ring-2 focus:ring-[#525355]/60 focus:border-transparent resize-none"
                     />
                   </div>
                   <button
                     type="submit"
-                    className="w-full py-2.5 bg-[#006266] hover:bg-[#004a4d] text-white rounded-xl font-semibold text-sm transition-colors flex items-center justify-center gap-2 shadow-sm"
+                    className="w-full py-2.5 bg-[#525355] hover:bg-[#3e3f40] text-white rounded-xl font-semibold text-sm transition-colors flex items-center justify-center gap-2 shadow-sm"
                   >
                     <Ico.Plus /> Buat Kelas
                   </button>
@@ -1164,7 +1164,7 @@ export default function GuruDashboard() {
                               </div>
                               <button
                                 onClick={() => handleCopy(cls.kode_kelas)}
-                                className="flex-shrink-0 flex items-center gap-1.5 font-mono text-xs font-bold text-[#006266] bg-[#006266]/10 border border-[#006266]/25 px-2.5 py-1 rounded-lg hover:bg-[#006266]/20 active:scale-95 transition-all duration-200 group relative"
+                                className="flex-shrink-0 flex items-center gap-1.5 font-mono text-xs font-bold text-[#525355] bg-[#525355]/10 border border-[#525355]/25 px-2.5 py-1 rounded-lg hover:bg-[#525355]/20 active:scale-95 transition-all duration-200 group relative"
                                 title="Klik untuk menyalin"
                               >
                                 <span>{cls.kode_kelas}</span>
@@ -1217,7 +1217,7 @@ export default function GuruDashboard() {
                   Buat Materi / Soal
                 </h2>
                 {selectedClassName && (
-                  <p className="text-xs text-[#006266] font-semibold mt-1">
+                  <p className="text-xs text-[#525355] font-semibold mt-1">
                     untuk {selectedClassName}
                   </p>
                 )}
@@ -1234,7 +1234,7 @@ export default function GuruDashboard() {
                       value={judulTugas}
                       onChange={(e) => setJudulTugas(e.target.value)}
                       placeholder="Contoh: Soal Aljabar Linear"
-                      className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-[#F5EFE7] focus:outline-none focus:ring-2 focus:ring-[#006266]/60 focus:border-transparent"
+                      className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-[#F5EFE7] focus:outline-none focus:ring-2 focus:ring-[#525355]/60 focus:border-transparent"
                     />
                   </div>
                   <div>
@@ -1247,7 +1247,7 @@ export default function GuruDashboard() {
                       rows={6}
                       onChange={(e) => setDeskripsiTugas(e.target.value)}
                       placeholder="Tuliskan soal atau penjelasan materi di sini..."
-                      className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-[#F5EFE7] focus:outline-none focus:ring-2 focus:ring-[#006266]/60 focus:border-transparent resize-none"
+                      className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-[#F5EFE7] focus:outline-none focus:ring-2 focus:ring-[#525355]/60 focus:border-transparent resize-none"
                     />
                   </div>
                   <button
@@ -1367,7 +1367,7 @@ export default function GuruDashboard() {
                             className={`mt-4 flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold transition-colors border ${
                               viewingAssignment?.id === assg.id
                                 ? "bg-slate-100 hover:bg-slate-200 text-slate-600 border-slate-200"
-                                : "bg-[#006266]/10 hover:bg-[#006266]/20 text-[#006266] border-[#006266]/25"
+                                : "bg-[#525355]/10 hover:bg-[#525355]/20 text-[#525355] border-[#525355]/25"
                             }`}
                           >
                             {viewingAssignment?.id === assg.id ? (
@@ -1384,14 +1384,14 @@ export default function GuruDashboard() {
 
                         {/* Submissions panel */}
                         {viewingAssignment?.id === assg.id && (
-                          <div className="border-t border-[#006266]/20 bg-[#006266]/5">
-                            <div className="px-5 py-4 flex items-center justify-between border-b border-[#006266]/20">
-                              <h4 className="font-bold text-[#004a4d]">
+                          <div className="border-t border-[#525355]/20 bg-[#525355]/5">
+                            <div className="px-5 py-4 flex items-center justify-between border-b border-[#525355]/20">
+                              <h4 className="font-bold text-[#3e3f40]">
                                 Hasil: {viewingAssignment.judul}
                               </h4>
                               <button
                                 onClick={() => setViewingAssignment(null)}
-                                className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-[#006266]/20 text-[#006266] transition-colors"
+                                className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-[#525355]/20 text-[#525355] transition-colors"
                               >
                                 <Ico.X />
                               </button>
@@ -1454,7 +1454,7 @@ export default function GuruDashboard() {
                                                     onClick={() =>
                                                       setSelectedFoto(photo)
                                                     }
-                                                    className="overflow-hidden rounded-lg focus:outline-none focus:ring-2 focus:ring-[#006266]"
+                                                    className="overflow-hidden rounded-lg focus:outline-none focus:ring-2 focus:ring-[#525355]"
                                                   >
                                                     <img
                                                       src={`${photo}`}
@@ -1515,18 +1515,18 @@ export default function GuruDashboard() {
                                               </button>
                                             </div>
                                           ) : (
-                                            <div className="p-4 bg-[#006266]/10 border border-[#006266]/25 rounded-xl relative">
+                                            <div className="p-4 bg-[#525355]/10 border border-[#525355]/25 rounded-xl relative">
                                               {sub.nilai !== null && (
                                                 <button
                                                   onClick={() =>
                                                     setEditingGradeId(null)
                                                   }
-                                                  className="absolute top-3 right-3 w-6 h-6 flex items-center justify-center rounded-md hover:bg-[#006266]/20 text-[#006266]/60 transition-colors"
+                                                  className="absolute top-3 right-3 w-6 h-6 flex items-center justify-center rounded-md hover:bg-[#525355]/20 text-[#525355]/60 transition-colors"
                                                 >
                                                   <Ico.X />
                                                 </button>
                                               )}
-                                              <p className="text-xs font-bold text-[#004a4d] mb-3">
+                                              <p className="text-xs font-bold text-[#3e3f40] mb-3">
                                                 {sub.nilai !== null
                                                   ? "Ubah Penilaian"
                                                   : "Berikan Penilaian"}
@@ -1551,7 +1551,7 @@ export default function GuruDashboard() {
                                                       })
                                                     }
                                                     placeholder="85"
-                                                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#006266]/60"
+                                                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#525355]/60"
                                                   />
                                                 </div>
                                                 <div className="flex-1">
@@ -1571,7 +1571,7 @@ export default function GuruDashboard() {
                                                       })
                                                     }
                                                     placeholder="Bagus! / Perhatikan rumus..."
-                                                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#006266]/60"
+                                                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#525355]/60"
                                                   />
                                                 </div>
                                                 <div className="flex items-end">
@@ -1585,7 +1585,7 @@ export default function GuruDashboard() {
                                                     className={`px-5 py-2 text-white font-bold rounded-lg text-sm transition-colors whitespace-nowrap ${
                                                       sub.nilai !== null
                                                         ? "bg-amber-600 hover:bg-amber-700"
-                                                        : "bg-[#006266] hover:bg-[#004a4d]"
+                                                        : "bg-[#525355] hover:bg-[#3e3f40]"
                                                     }`}
                                                   >
                                                     {sub.nilai !== null
@@ -1709,7 +1709,7 @@ export default function GuruDashboard() {
                     outline: none;
                     margin-left: 6px;
                   }
-                  .dataTables_wrapper .dataTables_filter input:focus { border-color: #006266; }
+                  .dataTables_wrapper .dataTables_filter input:focus { border-color: #525355; }
                   .dataTables_wrapper .dataTables_length select {
                     border: 1px solid #e2e8f0;
                     border-radius: 8px;
@@ -1726,7 +1726,7 @@ export default function GuruDashboard() {
                     padding: 4px 10px !important;
                   }
                   .dataTables_wrapper .dataTables_paginate .paginate_button.current {
-                    background: #006266 !important;
+                    background: #525355 !important;
                     color: white !important;
                   }
                   .dataTables_wrapper .dataTables_paginate .paginate_button:hover:not(.current) {
@@ -1766,7 +1766,7 @@ export default function GuruDashboard() {
               onClick={() => setActiveTab(id)}
               className={`flex-1 flex flex-col items-center gap-1 py-3 text-xs font-medium transition-colors ${
                 activeTab === id
-                  ? "text-[#006266]"
+                  ? "text-[#525355]"
                   : "text-slate-400 hover:text-slate-600"
               }`}
             >
