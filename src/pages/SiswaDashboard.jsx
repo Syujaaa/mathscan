@@ -116,6 +116,31 @@ const IconArrow = ({ size = 16 }) => (
   </svg>
 );
 
+const LoadingSpinner = ({ label = "Memuat..." }) => (
+  <div className="flex items-center justify-center gap-2 py-4 text-sm font-medium text-slate-500">
+    <svg
+      className="h-4 w-4 animate-spin"
+      viewBox="0 0 24 24"
+      fill="none"
+    >
+      <circle
+        className="opacity-25"
+        cx="12"
+        cy="12"
+        r="10"
+        stroke="currentColor"
+        strokeWidth="4"
+      />
+      <path
+        className="opacity-75"
+        fill="currentColor"
+        d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+      />
+    </svg>
+    <span>{label}</span>
+  </div>
+);
+
 function loadScript(src, id) {
   return new Promise((resolve) => {
     if (document.getElementById(id)) {
@@ -216,9 +241,12 @@ export default function SiswaDashboard() {
   const [joinedClasses, setJoinedClasses] = useState([]);
   const [selectedClass, setSelectedClass] = useState(null);
   const [assignments, setAssignments] = useState([]);
+  const [loadingClasses, setLoadingClasses] = useState(false);
+  const [loadingAssignments, setLoadingAssignments] = useState(false);
 
   // History tab state
   const [riwayat, setRiwayat] = useState([]);
+  const [loadingRiwayat, setLoadingRiwayat] = useState(false);
 
   const TOPIK_LIST = [
     "Bilangan (Bulat, Pecahan, Desimal, Persen)",
@@ -417,6 +445,7 @@ export default function SiswaDashboard() {
 
   /* ── Data fetching ── */
   const fetchClasses = async () => {
+    setLoadingClasses(true);
     try {
       const res = await fetch(`${API_BASE_URL}/siswa/classes`, {
         headers: getAuthHeaders(),
@@ -424,10 +453,13 @@ export default function SiswaDashboard() {
       if (res.ok) setJoinedClasses(await res.json());
     } catch (e) {
       console.error(e);
+    } finally {
+      setLoadingClasses(false);
     }
   };
 
   const fetchRiwayat = async () => {
+    setLoadingRiwayat(true);
     try {
       const res = await fetch(`${API_BASE_URL}/siswa/riwayat-scan`, {
         headers: getAuthHeaders(),
@@ -435,10 +467,13 @@ export default function SiswaDashboard() {
       if (res.ok) setRiwayat(await res.json());
     } catch (e) {
       console.error(e);
+    } finally {
+      setLoadingRiwayat(false);
     }
   };
 
   const fetchAssignments = async (class_id) => {
+    setLoadingAssignments(true);
     try {
       const res = await fetch(`${API_BASE_URL}/siswa/assignments/${class_id}`, {
         headers: getAuthHeaders(),
@@ -467,6 +502,8 @@ export default function SiswaDashboard() {
       setAssignments(withStatus);
     } catch (e) {
       console.error(e);
+    } finally {
+      setLoadingAssignments(false);
     }
   };
 
@@ -816,6 +853,12 @@ export default function SiswaDashboard() {
 
       {/* ── MAIN ── */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 pb-24 md:pb-8">
+        {(loadingClasses || loadingAssignments || loadingRiwayat) && (
+          <div className="mb-4 flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600 shadow-sm">
+            <LoadingSpinner label="Memuat data dashboard..." />
+          </div>
+        )}
+
         {/* Active assignment ribbon (only on scan tab) */}
         {activeTab === "scan" && activeAssignmentId && (
           <div className="mb-5 flex items-center gap-3 p-3 bg-[#525355] text-white rounded-xl shadow-sm">
@@ -985,7 +1028,7 @@ export default function SiswaDashboard() {
                           submissionDetail?.nilai !== undefined && (
                             <div className="p-4 bg-[#525355]/10 border border-[#525355]/25 rounded-xl">
                               <p className="text-xs font-bold uppercase tracking-widest text-[#525355]/60 mb-1">
-                                Penilaian Guru
+                                Nilai
                               </p>
                               <p className="text-3xl font-black text-[#525355]">
                                 {submissionDetail.nilai}
@@ -1008,19 +1051,15 @@ export default function SiswaDashboard() {
                               Foto yang dikirim
                             </p>
                             <div className="flex gap-2 flex-wrap">
-                              {getParsedPhotos().map((photo, idx) => (
-                                <a
-                                  key={idx}
-                                  href={`${photo}`}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                >
+                              {getParsedPhotos().map((photo, idx) => (  
                                   <img
+                                    onClick={() => {
+                                      setSelectedFoto(photo);
+                                    }}
                                     src={`${photo}`}
                                     alt="Tugas"
                                     className="h-16 w-16 object-cover border border-slate-200 rounded-lg shadow-sm hover:scale-105 transition-transform"
                                   />
-                                </a>
                               ))}
                             </div>
                           </div>
@@ -1069,7 +1108,7 @@ export default function SiswaDashboard() {
                           <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-2">
                             Umpan Balik Pembelajaran
                           </p>
-                          <div className="p-4 bg-[#FF7675]/10 border border-[#FF7675]/30 rounded-xl text-sm text-[#7a1f1e] leading-relaxed">
+                          <div className="p-4 bg-[#525355]/10 border border-[#FF7675]/30 rounded-xl text-sm text-[#7a1f1e] leading-relaxed">
                             {scanResult?.analisis_pembelajaran ||
                             submissionDetail?.analisis_pembelajaran ? (
                               <div
@@ -1150,7 +1189,11 @@ export default function SiswaDashboard() {
               {/* Class list */}
               <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
                 <h2 className="font-bold text-slate-800 mb-3">Daftar Kelas</h2>
-                {joinedClasses.length === 0 ? (
+                {loadingClasses ? (
+                  <div className="rounded-xl border border-slate-100 bg-[#F5EFE7]/60 p-4">
+                    <LoadingSpinner label="Memuat kelas..." />
+                  </div>
+                ) : joinedClasses.length === 0 ? (
                   <p className="text-sm text-slate-400 italic">
                     Belum bergabung ke kelas manapun.
                   </p>
@@ -1193,7 +1236,11 @@ export default function SiswaDashboard() {
                     </p>
                   </div>
                   <div className="p-6">
-                    {assignments.length === 0 ? (
+                    {loadingAssignments ? (
+                      <div className="rounded-xl border border-slate-100 bg-[#F5EFE7]/60 p-6">
+                        <LoadingSpinner label="Memuat tugas kelas..." />
+                      </div>
+                    ) : assignments.length === 0 ? (
                       <div className="flex flex-col items-center py-12 text-center text-slate-400">
                         <svg
                           className="mb-3"
@@ -1314,7 +1361,11 @@ export default function SiswaDashboard() {
               </p>
             </div>
             <div className="overflow-x-auto">
-              {riwayat.length === 0 ? (
+              {loadingRiwayat ? (
+                <div className="flex flex-col items-center justify-center py-16 text-slate-400">
+                  <LoadingSpinner label="Memuat riwayat belajar..." />
+                </div>
+              ) : riwayat.length === 0 ? (
                 <div className="flex flex-col items-center py-16 text-slate-400">
                   <IconHistory size={36} />
                   <p className="mt-3 text-sm">Belum ada riwayat belajar.</p>

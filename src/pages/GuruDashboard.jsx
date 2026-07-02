@@ -268,6 +268,20 @@ const Ico = {
       <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
     </svg>
   ),
+  Loader: ({ size = 16 }) => (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      className="animate-spin"
+    >
+      <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+    </svg>
+  ),
 };
 
 /* ─────────────────────────────────────────────────────────────────────────────
@@ -296,6 +310,7 @@ export default function GuruDashboard() {
   const [pendingStudents, setPendingStudents] = useState([]);
   const [editingGradeId, setEditingGradeId] = useState(null);
   const [depsReady, setDepsReady] = useState(false);
+  const [loadingMonitoring, setLoadingMonitoring] = useState(false);
 
   const dtRef = useRef(null); // DataTable instance ref
   const tableRef = useRef(null); // <table> DOM ref
@@ -386,7 +401,7 @@ export default function GuruDashboard() {
         paginate: { previous: "\u2039 Sebelumnya", next: "Berikutnya \u203a" },
       },
       pageLength: 10,
-      columnDefs: [{ targets: [2, 3], className: "dt-center" }],
+      columnDefs: [{ targets: [0, 3, 4, 5, 6], className: "dt-center" }],
     });
 
     return () => {
@@ -411,11 +426,37 @@ export default function GuruDashboard() {
             ? "#92400e,#fef3c7"
             : "#991b1b,#fee2e2";
       const [textColor, bgColor] = color.split(",");
+
+      const skor = Number(student.skor_total || 0);
+      const skorColor =
+        skor >= 80
+          ? "#065f46,#d1fae5"
+          : skor >= 60
+            ? "#92400e,#fef3c7"
+            : "#991b1b,#fee2e2";
+      const [skorTextColor, skorBgColor] = skorColor.split(",");
+
+      const peringkat = student.peringkat;
+      const medal =
+        peringkat === 1
+          ? "🥇"
+          : peringkat === 2
+            ? "🥈"
+            : peringkat === 3
+              ? "🥉"
+              : `#${peringkat ?? "-"}`;
+
       dt.row.add([
+        `<span class="font-bold" style="color:#525355">${medal}</span>`,
         `<span class="font-semibold" style="color:#1e293b">${student.nama}</span>`,
         `<span style="color:#64748b">${student.email}</span>`,
+        `<div class="flex flex-col items-center gap-0.5">
+           <span class="inline-block px-2 py-0.5 rounded-full text-xs font-bold" style="background:#525355;color:white">Lv. ${student.level ?? 1}</span>
+           <span class="text-[10px] text-slate-400 whitespace-nowrap">${student.badge || ""}</span>
+         </div>`,
         `<span class="inline-block px-2 py-0.5 rounded-full text-xs font-bold" style="background:#d1fae5;color:#065f46">${student.jumlah_dikerjakan || 0}</span>`,
         `<span class="inline-block px-2 py-0.5 rounded-full text-xs font-bold" style="background:${bgColor};color:${textColor}">${val.toFixed(1)}</span>`,
+        `<span class="inline-block px-2 py-0.5 rounded-full text-xs font-bold" style="background:${skorBgColor};color:${skorTextColor}">${skor.toFixed(1)}</span>`,
       ]);
     });
     dt.draw();
@@ -451,20 +492,21 @@ export default function GuruDashboard() {
       if (activeTab === "kelas") {
         fetchClasses();
       } else if (activeTab === "monitoring" && selectedClassId) {
-        fetch(`${API_BASE_URL}/guru/monitoring/${selectedClassId}`, {
-          headers: getAuthHeaders(),
-        })
-          .then((res) => (res.ok ? res.json() : null))
-          .then((data) => data && setStudentsData(data));
-
-        fetch(
-          `${API_BASE_URL}/guru/classes/${selectedClassId}/pending-students`,
-          {
+        setLoadingMonitoring(true);
+        Promise.all([
+          fetch(`${API_BASE_URL}/guru/monitoring/${selectedClassId}`, {
             headers: getAuthHeaders(),
-          },
-        )
-          .then((res) => (res.ok ? res.json() : null))
-          .then((data) => data && setPendingStudents(data));
+          }).then((res) => (res.ok ? res.json() : null)),
+          fetch(
+            `${API_BASE_URL}/guru/classes/${selectedClassId}/pending-students`,
+            { headers: getAuthHeaders() },
+          ).then((res) => (res.ok ? res.json() : null)),
+        ])
+          .then(([monitoring, pending]) => {
+            if (monitoring) setStudentsData(monitoring);
+            if (pending) setPendingStudents(pending);
+          })
+          .finally(() => setLoadingMonitoring(false));
       } else if (activeTab === "materi" && selectedClassId) {
         fetch(`${API_BASE_URL}/guru/assignments/${selectedClassId}`, {
           headers: getAuthHeaders(),
@@ -507,8 +549,10 @@ export default function GuruDashboard() {
       if (res.ok) setPendingStudents(await res.json());
     };
     if (activeTab === "monitoring") {
-      fetchMonitoring();
-      fetchPending();
+      setLoadingMonitoring(true);
+      Promise.all([fetchMonitoring(), fetchPending()]).finally(() =>
+        setLoadingMonitoring(false),
+      );
     }
     if (activeTab === "materi") fetchAssignments();
   }, [activeTab, selectedClassId]);
@@ -1670,17 +1714,24 @@ export default function GuruDashboard() {
 
             {/* Student performance DataTable */}
             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-              <div className="px-6 pt-6 pb-4 border-b border-slate-100">
-                <h2 className="font-bold text-slate-800 text-lg">
-                  Performa Siswa
-                </h2>
-                <p className="text-sm text-slate-500 mt-0.5">
-                  {selectedClassName
-                    ? `Kelas ${selectedClassName}`
-                    : "Pilih kelas untuk melihat data."}
-                </p>
+              <div className="px-6 pt-6 pb-4 border-b border-slate-100 flex items-center justify-between gap-3">
+                <div>
+                  <h2 className="font-bold text-slate-800 text-lg">
+                    Performa Siswa
+                  </h2>
+                  <p className="text-sm text-slate-500 mt-0.5">
+                    {selectedClassName
+                      ? `Kelas ${selectedClassName}`
+                      : "Pilih kelas untuk melihat data."}
+                  </p>
+                </div>
+                {loadingMonitoring && studentsData.length > 0 && (
+                  <span className="flex items-center gap-1.5 text-xs font-semibold text-[#525355] flex-shrink-0">
+                    <Ico.Loader size={14} /> Memperbarui...
+                  </span>
+                )}
               </div>
-              <div className="p-5 overflow-x-auto">
+              <div className="p-5 overflow-x-auto relative">
                 {/* DataTables styles override to fit our design */}
                 <style>{`
                   table.dataTable thead th {
@@ -1743,14 +1794,27 @@ export default function GuruDashboard() {
                 >
                   <thead>
                     <tr>
+                      <th>#</th>
                       <th>Nama Siswa</th>
                       <th>Email</th>
+                      <th className="text-center">Level</th>
                       <th className="text-center">Tugas Dikerjakan</th>
                       <th className="text-center">Rata-rata Nilai</th>
+                      <th className="text-center">Skor Total</th>
                     </tr>
                   </thead>
                   <tbody></tbody>
                 </table>
+
+                {/* Overlay loading saat pertama kali memuat data kelas yang dipilih */}
+                {loadingMonitoring && studentsData.length === 0 && (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-white/85 backdrop-blur-[1px] rounded-b-2xl py-10">
+                    <Ico.Loader size={28} />
+                    <p className="text-sm font-medium text-slate-500">
+                      Memuat data performa siswa...
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
