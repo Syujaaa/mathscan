@@ -55,6 +55,7 @@ export default function AdminDashboard() {
 
   // Stats kept separately — lightweight, no DT involvement
   const [stats, setStats] = useState({ total: 0, guru: 0, siswa: 0 });
+  const [users, setUsers] = useState([]);
 
   const tableRef = useRef(null);
   const dtRef = useRef(null); // DataTables instance
@@ -211,14 +212,8 @@ export default function AdminDashboard() {
         data.forEach((u) => {
           usersMapRef.current[u.id] = u;
         });
+        setUsers(data);
         refreshStats();
-
-        // Wait for jQuery + DT then init with full dataset
-        const wait = () => {
-          if (window.$ && window.$.fn?.DataTable) initDT(data);
-          else setTimeout(wait, 120);
-        };
-        wait();
       } catch {
         toast("error", "Gagal memuat data pengguna");
       } finally {
@@ -236,6 +231,23 @@ export default function AdminDashboard() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   // ─────────────────────────────────────────────────────────────────────────
+
+  useEffect(() => {
+    if (isLoadingUsers || !tableRef.current || users.length === 0) return;
+
+    const waitForDt = () => {
+      if (!window.$ || !window.$.fn?.DataTable) {
+        setTimeout(waitForDt, 120);
+        return;
+      }
+
+      if (!dtRef.current) {
+        initDT(users);
+      }
+    };
+
+    waitForDt();
+  }, [isLoadingUsers, users, initDT]);
 
   // ── Logout ────────────────────────────────────────────────────────────────
   const handleLogout = async () => {
