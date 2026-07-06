@@ -282,7 +282,39 @@ const Ico = {
       <path d="M21 12a9 9 0 1 1-6.219-8.56" />
     </svg>
   ),
+  File: () => (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+      <polyline points="14 2 14 8 20 8" />
+    </svg>
+  ),
+  Paperclip: () => (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+    </svg>
+  ),
 };
+
+/* Format ukuran file singkat, dan pilih ikon berdasarkan tipe file */
+const isImageFile = (mimetype) => (mimetype || "").startsWith("image/");
 
 /* ─────────────────────────────────────────────────────────────────────────────
    MAIN COMPONENT
@@ -304,6 +336,7 @@ export default function GuruDashboard() {
   const [editDeskripsiKelas, setEditDeskripsiKelas] = useState("");
   const [judulTugas, setJudulTugas] = useState("");
   const [deskripsiTugas, setDeskripsiTugas] = useState("");
+  const [fileTugas, setFileTugas] = useState([]); // ++ file soal saat membuat materi baru ++
   const [editingAssignmentId, setEditingAssignmentId] = useState(null);
   const [editJudulTugas, setEditJudulTugas] = useState("");
   const [editDeskripsiTugas, setEditDeskripsiTugas] = useState("");
@@ -311,9 +344,20 @@ export default function GuruDashboard() {
   const [editingGradeId, setEditingGradeId] = useState(null);
   const [depsReady, setDepsReady] = useState(false);
   const [loadingMonitoring, setLoadingMonitoring] = useState(false);
+  const [isSubmittingAssignment, setIsSubmittingAssignment] = useState(false);
+  const [analisisData, setAnalisisData] = useState(null);
+  const [loadingAnalisis, setLoadingAnalisis] = useState(false);
+  const [loadingLatestAnalisis, setLoadingLatestAnalisis] = useState(false);
+
+  // ++ STATE UNTUK TAMBAH FILE SOAL DI TUGAS YANG SUDAH ADA ++
+  const [addingFilesId, setAddingFilesId] = useState(null);
+  const [extraFiles, setExtraFiles] = useState([]);
+  const [isUploadingExtraFiles, setIsUploadingExtraFiles] = useState(false);
 
   const dtRef = useRef(null); // DataTable instance ref
   const tableRef = useRef(null); // <table> DOM ref
+  const fileInputRef = useRef(null); // input file untuk form buat materi baru
+  const extraFileInputRef = useRef(null); // input file untuk tambah file soal
 
   const navigate = useNavigate();
 
@@ -351,6 +395,68 @@ export default function GuruDashboard() {
     } catch (error) {
       // Fallback jika bukan JSON yang valid
       return [rawUrl.replace(/[\[\]"\\]/g, "")];
+    }
+  };
+
+  // ++ Membuat analisis BARU (hitung ulang dari data terkini) ++
+const fetchPerformanceAnalysis = async () => {
+  if (!selectedClassId) {
+    toast("warning", "Pilih kelas terlebih dahulu!");
+    return;
+  }
+  setLoadingAnalisis(true);
+  try {
+    const res = await fetch(
+      `${API_BASE_URL}/guru/performance-analysis/${selectedClassId}`,
+      { headers: getAuthHeaders() },
+    );
+    if (res.ok) {
+      const data = await res.json();
+      setAnalisisData({ ...data, dianalisis_pada: new Date().toISOString() });
+      toast("success", "Analisis performa berhasil dibuat!");
+    } else {
+      const err = await res.json().catch(() => ({}));
+      toast("error", err.error || "Gagal membuat analisis performa.");
+    }
+  } catch (_) {
+    toast("error", "Gagal membuat analisis performa.");
+  } finally {
+    setLoadingAnalisis(false);
+  }
+};
+
+  // silent=true dipakai untuk auto-load (tidak menampilkan toast error jika belum ada data)
+  const fetchLatestAnalysis = async (silent = false) => {
+    if (!selectedClassId) {
+      if (!silent) toast("warning", "Pilih kelas terlebih dahulu!");
+      return;
+    }
+    setLoadingLatestAnalisis(true);
+    try {
+      const res = await fetch(
+        `${API_BASE_URL}/guru/performance-analysis/${selectedClassId}/latest`,
+        { headers: getAuthHeaders() },
+      );
+      if (res.ok) {
+        const data = await res.json();
+        setAnalisisData(data);
+        if (!silent) toast("success", "Analisis terakhir berhasil dimuat!");
+      } else if (res.status === 404) {
+        setAnalisisData(null);
+        if (!silent) {
+          const err = await res.json().catch(() => ({}));
+          toast(
+            "info",
+            err.error || "Belum ada analisis tersimpan untuk kelas ini.",
+          );
+        }
+      } else {
+        if (!silent) toast("error", "Gagal memuat analisis terakhir.");
+      }
+    } catch (_) {
+      if (!silent) toast("error", "Gagal memuat analisis terakhir.");
+    } finally {
+      setLoadingLatestAnalisis(false);
     }
   };
 
@@ -485,6 +591,22 @@ export default function GuruDashboard() {
   useEffect(() => {
     if (activeTab === "kelas") fetchClasses();
   }, [activeTab]);
+
+  useEffect(() => {
+    setAnalisisData(null);
+    if (activeTab === "monitoring" && selectedClassId) {
+      fetchLatestAnalysis(true); // silent, jangan tampilkan toast kalau belum ada data
+    }
+  }, [selectedClassId, activeTab]);
+
+  // ++ HELPER: refetch daftar materi/soal untuk kelas yang sedang aktif ++
+  const refetchAssignments = async () => {
+    if (!selectedClassId) return;
+    const r = await fetch(`${API_BASE_URL}/guru/assignments/${selectedClassId}`, {
+      headers: getAuthHeaders(),
+    });
+    if (r.ok) setAssignments(await r.json());
+  };
 
   // Auto-refresh data terbaru saat tab/window kembali difokuskan
   useEffect(() => {
@@ -687,34 +809,43 @@ export default function GuruDashboard() {
   };
 
   /* ── Assignment CRUD ── */
+  // ++ DIUBAH: sekarang mengirim FormData agar file soal (gambar/PDF) ikut terunggah ++
   const handleCreateAssignment = async (e) => {
     e.preventDefault();
     if (!selectedClassId) {
       toast("warning", "Pilih kelas terlebih dahulu!");
       return;
     }
+    setIsSubmittingAssignment(true);
     try {
+      const formData = new FormData();
+      formData.append("class_id", selectedClassId);
+      formData.append("judul", judulTugas);
+      formData.append("deskripsi", deskripsiTugas);
+      fileTugas.forEach((file) => formData.append("files", file));
+
+      // PENTING: jangan set header "Content-Type" secara manual untuk FormData,
+      // browser akan otomatis menentukan boundary multipart yang benar.
       const res = await fetch(`${API_BASE_URL}/guru/assignments`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", ...getAuthHeaders() },
-        body: JSON.stringify({
-          class_id: selectedClassId,
-          judul: judulTugas,
-          deskripsi: deskripsiTugas,
-        }),
+        headers: { ...getAuthHeaders() },
+        body: formData,
       });
       if (res.ok) {
         toast("success", "Materi/Soal berhasil diposting!");
         setJudulTugas("");
         setDeskripsiTugas("");
-        const r = await fetch(
-          `${API_BASE_URL}/guru/assignments/${selectedClassId}`,
-          { headers: getAuthHeaders() },
-        );
-        if (r.ok) setAssignments(await r.json());
+        setFileTugas([]);
+        if (fileInputRef.current) fileInputRef.current.value = "";
+        await refetchAssignments();
+      } else {
+        const err = await res.json().catch(() => ({}));
+        toast("error", err.error || "Gagal membuat materi/soal.");
       }
     } catch (_) {
       toast("error", "Gagal membuat materi/soal.");
+    } finally {
+      setIsSubmittingAssignment(false);
     }
   };
 
@@ -735,11 +866,7 @@ export default function GuruDashboard() {
       if (res.ok) {
         toast("success", "Materi/Soal diperbarui!");
         setEditingAssignmentId(null);
-        const r = await fetch(
-          `${API_BASE_URL}/guru/assignments/${selectedClassId}`,
-          { headers: getAuthHeaders() },
-        );
-        if (r.ok) setAssignments(await r.json());
+        await refetchAssignments();
       }
     } catch (_) {
       toast("error", "Gagal memperbarui.");
@@ -761,14 +888,71 @@ export default function GuruDashboard() {
       if (res.ok) {
         toast("success", "Materi/Soal dihapus.");
         if (viewingAssignment?.id === assignmentId) setViewingAssignment(null);
-        const r = await fetch(
-          `${API_BASE_URL}/guru/assignments/${selectedClassId}`,
-          { headers: getAuthHeaders() },
-        );
-        if (r.ok) setAssignments(await r.json());
+        await refetchAssignments();
       }
     } catch (_) {
       toast("error", "Gagal menghapus.");
+    }
+  };
+
+  // ++ BARU: menambahkan file soal tambahan ke materi/tugas yang sudah ada ++
+  const handleAddAssignmentFiles = async (e, assignmentId) => {
+    e.preventDefault();
+    if (extraFiles.length === 0) {
+      toast("warning", "Pilih minimal 1 file terlebih dahulu.");
+      return;
+    }
+    setIsUploadingExtraFiles(true);
+    try {
+      const formData = new FormData();
+      extraFiles.forEach((file) => formData.append("files", file));
+
+      const res = await fetch(
+        `${API_BASE_URL}/guru/assignments/${assignmentId}/files`,
+        {
+          method: "POST",
+          headers: { ...getAuthHeaders() },
+          body: formData,
+        },
+      );
+      if (res.ok) {
+        toast("success", "File soal berhasil ditambahkan!");
+        setExtraFiles([]);
+        setAddingFilesId(null);
+        if (extraFileInputRef.current) extraFileInputRef.current.value = "";
+        await refetchAssignments();
+      } else {
+        const err = await res.json().catch(() => ({}));
+        toast("error", err.error || "Gagal menambahkan file soal.");
+      }
+    } catch (_) {
+      toast("error", "Gagal menambahkan file soal.");
+    } finally {
+      setIsUploadingExtraFiles(false);
+    }
+  };
+
+  // ++ BARU: menghapus salah satu file soal dari sebuah tugas ++
+  const handleDeleteAssignmentFile = async (fileId) => {
+    const result = await confirm(
+      "Hapus file soal ini?",
+      "File akan dihapus secara permanen dari tugas ini.",
+      "Ya, hapus file",
+    );
+    if (!result?.isConfirmed) return;
+    try {
+      const res = await fetch(
+        `${API_BASE_URL}/guru/assignments/files/${fileId}`,
+        { method: "DELETE", headers: getAuthHeaders() },
+      );
+      if (res.ok) {
+        toast("success", "File soal berhasil dihapus.");
+        await refetchAssignments();
+      } else {
+        toast("error", "Gagal menghapus file soal.");
+      }
+    } catch (_) {
+      toast("error", "Gagal menghapus file soal.");
     }
   };
 
@@ -837,6 +1021,32 @@ export default function GuruDashboard() {
     { id: "monitoring", label: "Monitoring Siswa", Icon: Ico.Monitor },
   ];
 
+
+  const performaColorMap = {
+    "Sangat Baik": "bg-emerald-100 text-emerald-800",
+    "Baik": "bg-teal-100 text-teal-800",
+    "Cukup": "bg-amber-100 text-amber-800",
+    "Perlu Perhatian": "bg-red-100 text-red-700",
+    "Belum Ada Data": "bg-slate-100 text-slate-500",
+  };
+
+  const trenInfo = {
+    meningkat: { label: "Meningkat", icon: "↗", color: "bg-emerald-100 text-emerald-700" },
+    menurun: { label: "Menurun", icon: "↘", color: "bg-red-100 text-red-700" },
+    stabil: { label: "Stabil", icon: "→", color: "bg-slate-100 text-slate-600" },
+  };
+
+  // ++ BARU: format tanggal analisis untuk ditampilkan di kartu Analisis Performa AI ++
+  const formatTanggalAnalisis = (iso) => {
+    if (!iso) return "";
+    return new Date(iso).toLocaleString("id-ID", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
   /* ═══════════════════════════════════════════════════════════════════════════
      RENDER
   ═══════════════════════════════════════════════════════════════════════════ */
@@ -1294,11 +1504,65 @@ export default function GuruDashboard() {
                       className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-[#F5EFE7] focus:outline-none focus:ring-2 focus:ring-[#525355]/60 focus:border-transparent resize-none"
                     />
                   </div>
+
+                  {/* ++ BARU: Upload file soal (gambar/pdf), opsional, maks 5 file ++ */}
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-600 mb-1.5">
+                      Lampiran Soal (opsional, gambar/PDF, maks 5 file)
+                    </label>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      multiple
+                      accept="image/jpeg,image/jpg,image/png,image/webp,application/pdf"
+                      onChange={(e) =>
+                        setFileTugas(
+                          Array.from(e.target.files || []).slice(0, 5),
+                        )
+                      }
+                      className="w-full text-xs text-slate-600 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-[#525355]/10 file:text-[#525355] hover:file:bg-[#525355]/20 cursor-pointer"
+                    />
+                    {fileTugas.length > 0 && (
+                      <ul className="mt-2 space-y-1">
+                        {fileTugas.map((f, idx) => (
+                          <li
+                            key={idx}
+                            className="flex items-center justify-between gap-2 text-xs text-slate-600 bg-[#F5EFE7] px-2.5 py-1.5 rounded-lg"
+                          >
+                            <span className="flex items-center gap-1.5 truncate">
+                              <Ico.Paperclip /> {f.name}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setFileTugas(
+                                  fileTugas.filter((_, i) => i !== idx),
+                                )
+                              }
+                              className="text-[#FF7675] hover:text-[#e56665] flex-shrink-0"
+                            >
+                              <Ico.X />
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+
                   <button
                     type="submit"
-                    className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-semibold text-sm transition-colors flex items-center justify-center gap-2 shadow-sm"
+                    disabled={isSubmittingAssignment}
+                    className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 disabled:cursor-not-allowed text-white rounded-xl font-semibold text-sm transition-colors flex items-center justify-center gap-2 shadow-sm"
                   >
-                    <Ico.Plus /> Posting ke Kelas
+                    {isSubmittingAssignment ? (
+                      <>
+                        <Ico.Loader size={16} /> Mengunggah...
+                      </>
+                    ) : (
+                      <>
+                        <Ico.Plus /> Posting ke Kelas
+                      </>
+                    )}
                   </button>
                 </form>
               </div>
@@ -1406,6 +1670,124 @@ export default function GuruDashboard() {
                           <p className="text-sm text-slate-600 whitespace-pre-wrap mt-3 leading-relaxed">
                             {assg.deskripsi}
                           </p>
+
+                          {/* ++ BARU: Daftar file soal terlampir + kelola file ++ */}
+                          <div className="mt-4 pt-4 border-t border-slate-100">
+                            <div className="flex items-center justify-between mb-2">
+                              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                                File Soal Terlampir
+                              </p>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setAddingFilesId(
+                                    addingFilesId === assg.id ? null : assg.id,
+                                  )
+                                }
+                                className="flex items-center gap-1 text-xs font-semibold text-[#525355] hover:text-[#3e3f40] bg-[#525355]/10 hover:bg-[#525355]/20 px-2.5 py-1 rounded-lg transition-colors"
+                              >
+                                <Ico.Plus /> Tambah File
+                              </button>
+                            </div>
+
+                            {assg.files && assg.files.length > 0 ? (
+                              <div className="flex flex-wrap gap-2">
+                                {assg.files.map((file) => (
+                                  <div key={file.id} className="relative group">
+                                    {isImageFile(file.mimetype) ? (
+                                      <button
+                                        type="button"
+                                        onClick={() =>
+                                          setSelectedFoto(file.file_url)
+                                        }
+                                        title={file.original_name}
+                                      >
+                                        <img
+                                          src={file.file_url}
+                                          alt={file.original_name}
+                                          className="h-16 w-16 object-cover rounded-lg border border-slate-200 hover:scale-105 transition-transform cursor-zoom-in"
+                                        />
+                                      </button>
+                                    ) : (
+                                      <a
+                                        href={file.file_url}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        title={file.original_name}
+                                        className="h-16 w-16 flex flex-col items-center justify-center gap-1 rounded-lg border border-slate-200 bg-[#F5EFE7] text-[#525355] hover:bg-[#525355]/10 transition-colors px-1"
+                                      >
+                                        <Ico.File />
+                                        <span className="text-[9px] font-bold">
+                                          PDF
+                                        </span>
+                                      </a>
+                                    )}
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        handleDeleteAssignmentFile(file.id)
+                                      }
+                                      title="Hapus file ini"
+                                      className="absolute -top-1.5 -right-1.5 w-5 h-5 flex items-center justify-center rounded-full bg-[#FF7675] text-white opacity-0 group-hover:opacity-100 transition-opacity shadow"
+                                    >
+                                      <Ico.X />
+                                    </button>
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <p className="text-xs text-slate-400 italic">
+                                Belum ada file soal yang dilampirkan.
+                              </p>
+                            )}
+
+                            {addingFilesId === assg.id && (
+                              <form
+                                onSubmit={(e) =>
+                                  handleAddAssignmentFiles(e, assg.id)
+                                }
+                                className="mt-3 flex flex-col sm:flex-row gap-2"
+                              >
+                                <input
+                                  ref={extraFileInputRef}
+                                  type="file"
+                                  multiple
+                                  accept="image/jpeg,image/jpg,image/png,image/webp,application/pdf"
+                                  onChange={(e) =>
+                                    setExtraFiles(
+                                      Array.from(e.target.files || []).slice(
+                                        0,
+                                        5,
+                                      ),
+                                    )
+                                  }
+                                  className="flex-1 text-xs text-slate-600 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-[#525355]/10 file:text-[#525355] hover:file:bg-[#525355]/20 cursor-pointer"
+                                />
+                                <div className="flex gap-2">
+                                  <button
+                                    type="submit"
+                                    disabled={isUploadingExtraFiles}
+                                    className="px-4 py-1.5 bg-[#525355] hover:bg-[#3e3f40] disabled:opacity-60 text-white text-xs font-bold rounded-lg transition-colors whitespace-nowrap"
+                                  >
+                                    {isUploadingExtraFiles
+                                      ? "Mengunggah..."
+                                      : "Unggah"}
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setAddingFilesId(null);
+                                      setExtraFiles([]);
+                                    }}
+                                    className="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold rounded-lg transition-colors"
+                                  >
+                                    <Ico.X />
+                                  </button>
+                                </div>
+                              </form>
+                            )}
+                          </div>
+
                           <button
                             onClick={() => fetchSubmissions(assg)}
                             className={`mt-4 flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold transition-colors border ${
@@ -1454,6 +1836,12 @@ export default function GuruDashboard() {
                                       photos = JSON.parse(sub.image_url);
                                       if (!Array.isArray(photos)) photos = [];
                                     } catch (_) {}
+
+                                    const langkahLangkah = Array.isArray(
+                                      sub.langkah_langkah,
+                                    )
+                                      ? sub.langkah_langkah
+                                      : [];
 
                                     return (
                                       <div
@@ -1520,6 +1908,80 @@ export default function GuruDashboard() {
                                               {sub.ocr_result_text}
                                             </pre>
                                           </div>
+
+                                          {/* ++ BARU: Rincian Langkah Pengerjaan (poin per langkah) ++ */}
+                                          {langkahLangkah.length > 0 && (
+                                            <div>
+                                              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">
+                                                Rincian Langkah Pengerjaan
+                                              </p>
+                                              <div className="space-y-2">
+                                                {langkahLangkah.map((langkah) => {
+                                                  const poinMax =
+                                                    Number(
+                                                      langkah.poin_maksimal,
+                                                    ) || 0;
+                                                  const poinDapat =
+                                                    Number(
+                                                      langkah.poin_didapat,
+                                                    ) || 0;
+                                                  const penuh =
+                                                    poinMax > 0 &&
+                                                    poinDapat >= poinMax;
+                                                  const nol = poinDapat <= 0;
+
+                                                  const badgeColor =
+                                                    langkah.is_correct || penuh
+                                                      ? "bg-emerald-100 text-emerald-800"
+                                                      : nol
+                                                        ? "bg-red-100 text-red-800"
+                                                        : "bg-amber-100 text-amber-800";
+                                                  const badgeLabel =
+                                                    langkah.is_correct || penuh
+                                                      ? "Benar"
+                                                      : nol
+                                                        ? "Salah"
+                                                        : "Sebagian";
+
+                                                  return (
+                                                    <div
+                                                      key={langkah.id}
+                                                      className="p-3 bg-[#F5EFE7] border border-slate-200 rounded-lg"
+                                                    >
+                                                      <div className="flex items-start justify-between gap-2">
+                                                        <p className="text-xs font-bold text-slate-600">
+                                                          Langkah{" "}
+                                                          {langkah.step_order}
+                                                        </p>
+                                                        <div className="flex items-center gap-2 flex-shrink-0">
+                                                          <span
+                                                            className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${badgeColor}`}
+                                                          >
+                                                            {badgeLabel}
+                                                          </span>
+                                                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-200 text-slate-700">
+                                                            {poinDapat}/
+                                                            {poinMax} poin
+                                                          </span>
+                                                        </div>
+                                                      </div>
+                                                      <p className="text-sm text-slate-700 mt-1.5 whitespace-pre-wrap">
+                                                        {langkah.expression_text}
+                                                      </p>
+                                                      {langkah.feedback_message && (
+                                                        <p className="text-xs text-[#7a1f1e] mt-1.5 italic">
+                                                          💬{" "}
+                                                          {
+                                                            langkah.feedback_message
+                                                          }
+                                                        </p>
+                                                      )}
+                                                    </div>
+                                                  );
+                                                })}
+                                              </div>
+                                            </div>
+                                          )}
 
                                           {sub.analisis_pembelajaran && (
                                             <div>
@@ -1711,6 +2173,134 @@ export default function GuruDashboard() {
                 </div>
               </div>
             )}
+
+            {/* Analisis Performa AI */}
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+              <div className="px-6 pt-6 pb-4 border-b border-slate-100 flex items-center justify-between gap-3 flex-wrap">
+                <div>
+                  <h2 className="font-bold text-slate-800 text-lg">
+                    Analisis Performa Kelas (AI)
+                  </h2>
+                  <p className="text-sm text-slate-500 mt-0.5">
+                    Rangkuman performa siswa berbasis data nilai, tren, dan partisipasi.
+                  </p>
+                  {analisisData?.dianalisis_pada && (
+                    <p className="text-xs text-slate-400 mt-1">
+                      Terakhir dianalisis: {formatTanggalAnalisis(analisisData.dianalisis_pada)}
+                    </p>
+                  )}
+                </div>
+                <div className="flex items-center gap-2 flex-shrink-0 flex-wrap">
+                  <button
+                    onClick={() => fetchLatestAnalysis(false)}
+                    disabled={loadingLatestAnalisis || loadingAnalisis || !selectedClassId}
+                    className="flex items-center gap-2 px-4 py-2.5 bg-white border border-[#525355]/30 hover:bg-[#525355]/10 disabled:opacity-60 disabled:cursor-not-allowed text-[#525355] rounded-xl font-semibold text-sm transition-colors"
+                  >
+                    {loadingLatestAnalisis ? (
+                      <>
+                        <Ico.Loader size={16} /> Memuat...
+                      </>
+                    ) : (
+                      <>Muat Analisis Terakhir</>
+                    )}
+                  </button>
+                  <button
+                    onClick={fetchPerformanceAnalysis}
+                    disabled={loadingAnalisis || loadingLatestAnalisis || !selectedClassId}
+                    className="flex items-center gap-2 px-4 py-2.5 bg-[#525355] hover:bg-[#3e3f40] disabled:opacity-60 disabled:cursor-not-allowed text-white rounded-xl font-semibold text-sm transition-colors"
+                  >
+                    {loadingAnalisis ? (
+                      <>
+                        <Ico.Loader size={16} /> Menganalisis...
+                      </>
+                    ) : (
+                      <>Buat Analisis Baru</>
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              {!analisisData ? (
+                <div className="p-8 text-center text-slate-400 text-sm">
+                  {loadingLatestAnalisis
+                    ? "Memeriksa analisis tersimpan..."
+                    : 'Belum ada analisis untuk kelas ini. Klik "Buat Analisis Baru" untuk memulai.'}
+                </div>
+              ) : (
+                <div className="p-6 space-y-5">
+                  {/* Ringkasan kelas */}
+                  <div className="p-5 bg-[#525355]/10 border border-[#525355]/25 rounded-xl">
+                    <div className="flex items-center justify-between gap-3 mb-2 flex-wrap">
+                      <h3 className="font-bold text-[#3e3f40]">
+                        {analisisData.nama_kelas}
+                      </h3>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-white text-[#525355] border border-[#525355]/25">
+                          Rata-rata: {analisisData.rata_rata_kelas}
+                        </span>
+                        <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-white text-[#525355] border border-[#525355]/25">
+                          Partisipasi: {analisisData.partisipasi_persen}%
+                        </span>
+                      </div>
+                    </div>
+                    <p className="text-sm text-[#3e3f40] leading-relaxed">
+                      {analisisData.ringkasan_kelas}
+                    </p>
+                  </div>
+
+                  {/* Per siswa */}
+                  <div>
+                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">
+                      Rincian per Siswa
+                    </p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {analisisData.siswa.map((s) => {
+                        const tren = trenInfo[s.tren];
+                        return (
+                          <div
+                            key={s.siswa_id}
+                            className="p-4 border border-slate-200 rounded-xl bg-[#F5EFE7]/60"
+                          >
+                            <div className="flex items-start justify-between gap-2 mb-2">
+                              <p className="font-semibold text-slate-800 text-sm truncate">
+                                {s.nama}
+                              </p>
+                              <div className="flex items-center gap-1.5 flex-shrink-0">
+                                <span
+                                  className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                                    performaColorMap[s.performa_label] ||
+                                    "bg-slate-100 text-slate-500"
+                                  }`}
+                                >
+                                  {s.performa_label}
+                                </span>
+                                {tren && (
+                                  <span
+                                    className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${tren.color}`}
+                                    title={tren.label}
+                                  >
+                                    {tren.icon} {tren.label}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-3 text-xs text-slate-500 mb-2">
+                              <span>
+                                Tugas: {s.jumlah_tugas_dikerjakan}/{s.jumlah_tugas_total}
+                              </span>
+                              <span>Rata-rata: {s.rata_rata_nilai}</span>
+                            </div>
+                            <p className="text-xs text-slate-600 leading-relaxed">
+                              {s.ringkasan_performa}
+                            </p>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
 
             {/* Student performance DataTable */}
             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">

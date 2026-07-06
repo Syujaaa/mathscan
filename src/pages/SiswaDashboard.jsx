@@ -115,6 +115,21 @@ const IconArrow = ({ size = 16 }) => (
     <polyline points="12 5 19 12 12 19" />
   </svg>
 );
+const IconFile = ({ size = 16 }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+    <polyline points="14 2 14 8 20 8" />
+  </svg>
+);
 
 const LoadingSpinner = ({ label = "Memuat..." }) => (
   <div className="flex items-center justify-center gap-2 py-4 text-sm font-medium text-slate-500">
@@ -221,16 +236,124 @@ function StatusBadge({ status, nilai }) {
   );
 }
 
+// ── Daftar file soal dari guru (gambar/pdf) ───────────────────────────────────
+function AssignmentFilesList({ files, onPreviewImage }) {
+  if (!files || files.length === 0) return null;
+  return (
+    <div className="mb-5">
+      <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
+        File Soal dari Guru
+      </p>
+      <div className="flex gap-2 flex-wrap">
+        {files.map((f) =>
+          f.file_type === "pdf" ? (
+            <a
+              key={f.id}
+              href={f.file_url}
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center gap-2 px-3 py-2 bg-[#F5EFE7] border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100 hover:border-slate-300 transition-colors max-w-[180px]"
+            >
+              <IconFile size={15} />
+              <span className="truncate">{f.original_name || "Lihat PDF"}</span>
+            </a>
+          ) : (
+            <img
+              key={f.id}
+              src={f.file_url}
+              alt={f.original_name || "File soal"}
+              onClick={() => onPreviewImage && onPreviewImage(f.file_url)}
+              className="w-16 h-16 object-cover rounded-lg border border-slate-200 cursor-pointer hover:opacity-80 hover:scale-105 transition-transform"
+            />
+          ),
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── Rincian langkah pengerjaan beserta poin per langkah ───────────────────────
+function LangkahPoinList({ steps }) {
+  if (!Array.isArray(steps) || steps.length === 0) return null;
+  const totalMaksimal = steps.reduce(
+    (sum, s) => sum + (Number(s.poin_maksimal) || 0),
+    0,
+  );
+  const totalDidapat = steps.reduce(
+    (sum, s) => sum + (Number(s.poin_didapat) || 0),
+    0,
+  );
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-2">
+        <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">
+          Rincian Poin per Langkah
+        </p>
+        <span className="text-xs font-bold text-slate-500">
+          Total: {totalDidapat}/{totalMaksimal || 100}
+        </span>
+      </div>
+      <div className="space-y-2">
+        {steps.map((s, idx) => {
+          const maksimal = Number(s.poin_maksimal) || 0;
+          const didapat = Number(s.poin_didapat) || 0;
+          const penuh = maksimal > 0 && didapat >= maksimal;
+          const nol = didapat <= 0;
+          const badgeColor = penuh
+            ? "bg-emerald-500 text-white"
+            : nol
+              ? "bg-[#FF7675] text-white"
+              : "bg-amber-500 text-white";
+          const cardBorder = penuh
+            ? "border-emerald-200 bg-emerald-50"
+            : nol
+              ? "border-[#FF7675]/40 bg-[#FF7675]/10"
+              : "border-amber-200 bg-amber-50";
+          return (
+            <div
+              key={s.id || idx}
+              className={`p-3 rounded-xl border text-sm ${cardBorder}`}
+            >
+              <div className="flex items-start justify-between gap-3 mb-1">
+                <p className="font-bold text-slate-700 text-xs uppercase tracking-wide">
+                  Langkah {s.step_order ?? idx + 1}
+                </p>
+                <span
+                  className={`flex-shrink-0 text-xs font-bold px-2 py-0.5 rounded-full ${badgeColor}`}
+                >
+                  {didapat}/{maksimal}
+                </span>
+              </div>
+              {s.expression_text && (
+                <p className="text-xs font-mono text-slate-600 whitespace-pre-wrap mb-1 leading-relaxed">
+                  {s.expression_text}
+                </p>
+              )}
+              {s.feedback_message && (
+                <p className="text-xs text-slate-500 italic mt-1 border-t border-slate-200/70 pt-1">
+                  {s.feedback_message}
+                </p>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 // ── Main Component ────────────────────────────────────────────────────────────
 export default function SiswaDashboard() {
   const [activeTab, setActiveTab] = useState("kelas");
   const navigate = useNavigate();
   const [selectedAnalisis, setSelectedAnalisis] = useState(null);
   const [selectedFoto, setSelectedFoto] = useState(null);
+  const [selectedLangkah, setSelectedLangkah] = useState(null);
   // Scan tab state
   const [images, setImages] = useState([]);
   const [activeAssignmentId, setActiveAssignmentId] = useState("");
   const [activeAssignmentTitle, setActiveAssignmentTitle] = useState("");
+  const [activeAssignmentFiles, setActiveAssignmentFiles] = useState([]);
   const [loadingScan, setLoadingScan] = useState(false);
   const [statusTugas, setStatusTugas] = useState("draft");
   const [scanResult, setScanResult] = useState(null);
@@ -566,6 +689,7 @@ export default function SiswaDashboard() {
   const handlePilihTugas = async (assg) => {
     setActiveAssignmentId(assg.id);
     setActiveAssignmentTitle(assg.judul);
+    setActiveAssignmentFiles(assg.files || []);
     setActiveTab("scan");
     setStatusTugas("draft");
     setScanResult(null);
@@ -636,6 +760,40 @@ export default function SiswaDashboard() {
               <button
                 className="px-4 py-2 bg-slate-600 hover:bg-slate-700 text-white text-xs font-semibold rounded-lg transition-colors shadow-sm"
                 onClick={() => setSelectedAnalisis(null)}
+              >
+                Tutup
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {selectedLangkah && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+          onClick={() => setSelectedLangkah(null)}
+        >
+          <div
+            className="bg-white rounded-xl shadow-2xl max-w-lg w-full max-h-[80vh] flex flex-col overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-[#F5EFE7]">
+              <h3 className="font-bold text-slate-800 text-sm uppercase tracking-wider">
+                Rincian Poin per Langkah
+              </h3>
+              <button
+                className="text-slate-400 hover:text-slate-600 text-2xl font-semibold leading-none transition-colors"
+                onClick={() => setSelectedLangkah(null)}
+              >
+                &times;
+              </button>
+            </div>
+            <div className="overflow-y-auto p-6 text-sm">
+              <LangkahPoinList steps={selectedLangkah} />
+            </div>
+            <div className="flex justify-end px-6 py-3.5 border-t border-slate-100 bg-[#F5EFE7]">
+              <button
+                className="px-4 py-2 bg-slate-600 hover:bg-slate-700 text-white text-xs font-semibold rounded-lg transition-colors shadow-sm"
+                onClick={() => setSelectedLangkah(null)}
               >
                 Tutup
               </button>
@@ -919,6 +1077,12 @@ export default function SiswaDashboard() {
                   </div>
 
                   <div className="p-6">
+                    {/* File soal dari guru — tersedia di kedua status (draft/completed) */}
+                    <AssignmentFilesList
+                      files={activeAssignmentFiles}
+                      onPreviewImage={(url) => setSelectedFoto(url)}
+                    />
+
                     {statusTugas === "draft" ? (
                       <form onSubmit={handleScan} className="space-y-5">
                         {/* Drop zone */}
@@ -1053,6 +1217,7 @@ export default function SiswaDashboard() {
                             <div className="flex gap-2 flex-wrap">
                               {getParsedPhotos().map((photo, idx) => (  
                                   <img
+                                    key={idx}
                                     onClick={() => {
                                       setSelectedFoto(photo);
                                     }}
@@ -1092,6 +1257,26 @@ export default function SiswaDashboard() {
                         </h3>
                       </div>
                       <div className="p-6 space-y-5">
+                        {/* Nilai (dari langkah, jika tersedia) */}
+                        {(() => {
+                          const nilaiTampil =
+                            scanResult?.nilai ?? submissionDetail?.nilai;
+                          return nilaiTampil !== null &&
+                            nilaiTampil !== undefined ? (
+                            <div className="p-4 bg-[#525355]/10 border border-[#525355]/25 rounded-xl text-center">
+                              <p className="text-xs font-bold uppercase tracking-widest text-[#525355]/60 mb-1">
+                                Nilai AI
+                              </p>
+                              <p className="text-3xl font-black text-[#525355]">
+                                {nilaiTampil}
+                                <span className="text-base font-bold text-[#525355]/60">
+                                  /100
+                                </span>
+                              </p>
+                            </div>
+                          ) : null;
+                        })()}
+
                         {/* OCR result */}
                         <div>
                           <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-2">
@@ -1103,6 +1288,15 @@ export default function SiswaDashboard() {
                               : submissionDetail?.ocr_result_text}
                           </pre>
                         </div>
+
+                        {/* Rincian poin per langkah */}
+                        <LangkahPoinList
+                          steps={
+                            scanResult?.langkah_langkah ||
+                            submissionDetail?.langkah_langkah
+                          }
+                        />
+
                         {/* Analysis */}
                         <div>
                           <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-2">
@@ -1304,6 +1498,12 @@ export default function SiswaDashboard() {
                                   <p className="text-sm text-slate-600 whitespace-pre-wrap line-clamp-3">
                                     {assg.deskripsi}
                                   </p>
+                                  {assg.files && assg.files.length > 0 && (
+                                    <p className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-[#525355]/70">
+                                      <IconFile size={12} />
+                                      {assg.files.length} file soal terlampir
+                                    </p>
+                                  )}
                                 </div>
                               </div>
                               <button
@@ -1388,6 +1588,9 @@ export default function SiswaDashboard() {
                         Hasil Analisis
                       </th>
                       <th className="px-5 py-3 font-semibold text-xs uppercase tracking-wider text-slate-500 border-b border-slate-200 text-center">
+                        Rincian Poin
+                      </th>
+                      <th className="px-5 py-3 font-semibold text-xs uppercase tracking-wider text-slate-500 border-b border-slate-200 text-center">
                         Nilai
                       </th>
                     </tr>
@@ -1449,6 +1652,22 @@ export default function SiswaDashboard() {
                                 className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#525355]/10 text-[#525355] hover:bg-[#525355]/20 font-semibold rounded-lg text-xs transition-colors"
                               >
                                 Lihat Analisis AI
+                              </button>
+                            ) : (
+                              <span className="text-xs text-slate-400">-</span>
+                            )}
+                          </td>
+
+                          <td className="px-5 py-3.5 text-center">
+                            {Array.isArray(item.langkah_langkah) &&
+                            item.langkah_langkah.length > 0 ? (
+                              <button
+                                onClick={() =>
+                                  setSelectedLangkah(item.langkah_langkah)
+                                }
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#FF7675]/10 text-[#c94b4a] hover:bg-[#FF7675]/20 font-semibold rounded-lg text-xs transition-colors"
+                              >
+                                Lihat Poin ({item.langkah_langkah.length})
                               </button>
                             ) : (
                               <span className="text-xs text-slate-400">-</span>
@@ -1729,6 +1948,9 @@ export default function SiswaDashboard() {
                         {latihanResult.ocr_result_text}
                       </pre>
                     </div>
+
+                    {/* Rincian poin per langkah */}
+                    <LangkahPoinList steps={latihanResult.langkah_langkah} />
 
                     <div>
                       <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-2">
