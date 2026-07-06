@@ -325,6 +325,7 @@ export default function GuruDashboard() {
   const [selectedClassId, setSelectedClassId] = useState("");
   const [submissions, setSubmissions] = useState([]);
   const [viewingAssignment, setViewingAssignment] = useState(null);
+  const [loadingSubmissionsId, setLoadingSubmissionsId] = useState(null);
   const [inputNilai, setInputNilai] = useState({});
   const [inputCatatan, setInputCatatan] = useState({});
   const [studentsData, setStudentsData] = useState([]);
@@ -963,6 +964,7 @@ const fetchPerformanceAnalysis = async () => {
       setSubmissions([]);
       return;
     }
+    setLoadingSubmissionsId(assignment.id);
     try {
       const res = await fetch(
         `${API_BASE_URL}/guru/assignments/${assignment.id}/submissions`,
@@ -971,9 +973,15 @@ const fetchPerformanceAnalysis = async () => {
       if (res.ok) {
         setSubmissions(await res.json());
         setViewingAssignment(assignment);
+      } else {
+        // clear previous submissions if any
+        setSubmissions([]);
       }
     } catch (e) {
       console.error(e);
+      setSubmissions([]);
+    } finally {
+      setLoadingSubmissionsId(null);
     }
   };
 
@@ -1790,13 +1798,18 @@ const fetchPerformanceAnalysis = async () => {
 
                           <button
                             onClick={() => fetchSubmissions(assg)}
+                            disabled={loadingSubmissionsId === assg.id}
                             className={`mt-4 flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold transition-colors border ${
                               viewingAssignment?.id === assg.id
                                 ? "bg-slate-100 hover:bg-slate-200 text-slate-600 border-slate-200"
                                 : "bg-[#525355]/10 hover:bg-[#525355]/20 text-[#525355] border-[#525355]/25"
-                            }`}
+                            } ${loadingSubmissionsId === assg.id ? "opacity-80 cursor-wait" : ""}`}
                           >
-                            {viewingAssignment?.id === assg.id ? (
+                            {loadingSubmissionsId === assg.id ? (
+                              <>
+                                <Ico.Loader /> Tunggu sebentar...
+                              </>
+                            ) : viewingAssignment?.id === assg.id ? (
                               <>
                                 <Ico.X /> Sembunyikan Hasil Pengerjaan
                               </>
