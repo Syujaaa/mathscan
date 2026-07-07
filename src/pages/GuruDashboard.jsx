@@ -1230,9 +1230,11 @@ const fetchPerformanceAnalysis = async () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-[#525355] flex items-center justify-center">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="white">
-                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-              </svg>
+              <img 
+                src="/logo.png" 
+                alt="MathScan Logo" 
+                style={{ width: '100%', height: 'auto' }} 
+              />
             </div>
             <div>
               <span className="text-base font-bold text-slate-800 tracking-tight">

@@ -972,9 +972,11 @@ export default function SiswaDashboard() {
           <div className="flex items-center gap-3">
             {/* Logo mark */}
             <div className="w-8 h-8 rounded-lg bg-[#525355] flex items-center justify-center">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="white">
-                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-              </svg>
+              <img 
+                src="/logo.png" 
+                alt="MathScan Logo" 
+                style={{ width: '100%', height: 'auto' }} 
+              />
             </div>
             <span className="text-lg font-bold text-slate-800 tracking-tight">
               MathScan
