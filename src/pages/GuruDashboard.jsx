@@ -336,7 +336,7 @@ const isImageFile = (mimetype) => (mimetype || "").startsWith("image/");
    MAIN COMPONENT
 ───────────────────────────────────────────────────────────────────────────── */
 export default function GuruDashboard() {
-  const [activeTab, setActiveTab] = useState("kelas");
+  const [activeTab, setActiveTab] = useState("analytics");
   const [classes, setClasses] = useState([]);
   const [selectedClassId, setSelectedClassId] = useState("");
   const [submissions, setSubmissions] = useState([]);
@@ -1040,10 +1040,10 @@ const fetchPerformanceAnalysis = async () => {
     classes.find((c) => c.id === selectedClassId)?.nama_kelas || "";
 
   const navItems = [
+    { id: "analytics", label: "Analitik", Icon: Ico.Chart },
     { id: "kelas", label: "Kelola Kelas", Icon: Ico.Class },
     { id: "materi", label: "Materi & Soal", Icon: Ico.Book },
     { id: "monitoring", label: "Monitoring Siswa", Icon: Ico.Monitor },
-    { id: "analytics", label: "Analitik", Icon: Ico.Chart },
   ];
 
 
