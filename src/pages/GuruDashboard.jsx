@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { API_BASE_URL, getAuthHeaders } from "../config/api";
 import { Copy, Check } from "lucide-react";
+import AnalyticsDashboard from "./AnalyticsDashboard";
 
 /* ─────────────────────────────────────────────────────────────────────────────
    EXTERNAL SCRIPTS LOADER
@@ -147,6 +148,21 @@ const Ico = {
       <rect x="2" y="3" width="20" height="14" rx="2" />
       <line x1="8" y1="21" x2="16" y2="21" />
       <line x1="12" y1="17" x2="12" y2="21" />
+    </svg>
+  ),
+  Chart: () => (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M3 3v18h18" />
+      <path d="M7 14l4-4 3 3 5-7" />
     </svg>
   ),
   Logout: () => (
@@ -1027,6 +1043,7 @@ const fetchPerformanceAnalysis = async () => {
     { id: "kelas", label: "Kelola Kelas", Icon: Ico.Class },
     { id: "materi", label: "Materi & Soal", Icon: Ico.Book },
     { id: "monitoring", label: "Monitoring Siswa", Icon: Ico.Monitor },
+    { id: "analytics", label: "Analitik", Icon: Ico.Chart },
   ];
 
 
@@ -2133,6 +2150,16 @@ const fetchPerformanceAnalysis = async () => {
               )}
             </div>
           </div>
+        )}
+
+        {/* ═══════════════════════════════════════════════════════
+            TAB: ANALITIK
+        ═══════════════════════════════════════════════════════ */}
+        {activeTab === "analytics" && (
+          <AnalyticsDashboard
+            classes={classes}
+            selectedClassId={selectedClassId}
+          />
         )}
 
         {/* ═══════════════════════════════════════════════════════
