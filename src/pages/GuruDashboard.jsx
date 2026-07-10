@@ -165,6 +165,22 @@ const Ico = {
       <path d="M7 14l4-4 3 3 5-7" />
     </svg>
   ),
+  Download: () => (
+  <svg
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+    <polyline points="7 10 12 15 17 10" />
+    <line x1="12" y1="15" x2="12" y2="3" />
+  </svg>
+),
   Logout: () => (
     <svg
       width="18"
@@ -342,6 +358,7 @@ export default function GuruDashboard() {
   const [submissions, setSubmissions] = useState([]);
   const [viewingAssignment, setViewingAssignment] = useState(null);
   const [loadingSubmissionsId, setLoadingSubmissionsId] = useState(null);
+  const [downloadingExcel, setDownloadingExcel] = useState(false);
   const [inputNilai, setInputNilai] = useState({});
   const [inputCatatan, setInputCatatan] = useState({});
   const [studentsData, setStudentsData] = useState([]);
@@ -439,6 +456,47 @@ const fetchPerformanceAnalysis = async () => {
     toast("error", "Gagal membuat analisis performa.");
   } finally {
     setLoadingAnalisis(false);
+  }
+};
+
+const handleDownloadExcel = async () => {
+  if (!selectedClassId) {
+    toast("warning", "Pilih kelas terlebih dahulu!");
+    return;
+  }
+  setDownloadingExcel(true);
+  try {
+    const res = await fetch(
+      `${API_BASE_URL}/guru/classes/${selectedClassId}/export-excel`,
+      { headers: getAuthHeaders() },
+    );
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      toast("error", err.error || "Gagal mengunduh rekap nilai.");
+      return;
+    }
+
+    // Ambil nama file dari header Content-Disposition kalau ada, fallback ke nama default
+    const disposition = res.headers.get("Content-Disposition") || "";
+    const match = disposition.match(/filename="(.+)"/);
+    const fileName = match ? match[1] : `Rekap-Nilai-${selectedClassName || "Kelas"}.xlsx`;
+
+    const blob = await res.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url);
+
+    toast("success", "Rekap nilai berhasil diunduh!");
+  } catch (_) {
+    toast("error", "Gagal mengunduh rekap nilai.");
+  } finally {
+    setDownloadingExcel(false);
   }
 };
 
@@ -2346,7 +2404,7 @@ const fetchPerformanceAnalysis = async () => {
 
             {/* Student performance DataTable */}
             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-              <div className="px-6 pt-6 pb-4 border-b border-slate-100 flex items-center justify-between gap-3">
+              <div className="px-6 pt-6 pb-4 border-b border-slate-100 flex items-center justify-between gap-3 flex-wrap">
                 <div>
                   <h2 className="font-bold text-slate-800 text-lg">
                     Performa Siswa
@@ -2357,11 +2415,28 @@ const fetchPerformanceAnalysis = async () => {
                       : "Pilih kelas untuk melihat data."}
                   </p>
                 </div>
-                {loadingMonitoring && studentsData.length > 0 && (
-                  <span className="flex items-center gap-1.5 text-xs font-semibold text-[#525355] flex-shrink-0">
-                    <Ico.Loader size={14} /> Memperbarui...
-                  </span>
-                )}
+                <div className="flex items-center gap-3 flex-shrink-0">
+                  {loadingMonitoring && studentsData.length > 0 && (
+                    <span className="flex items-center gap-1.5 text-xs font-semibold text-[#525355]">
+                      <Ico.Loader size={14} /> Memperbarui...
+                    </span>
+                  )}
+                  <button
+                    onClick={handleDownloadExcel}
+                    disabled={downloadingExcel || !selectedClassId}
+                    className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 disabled:cursor-not-allowed text-white rounded-xl font-semibold text-sm transition-colors"
+                  >
+                    {downloadingExcel ? (
+                      <>
+                        <Ico.Loader size={16} /> Mengunduh...
+                      </>
+                    ) : (
+                      <>
+                        <Ico.Download /> Download Excel
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
               <div className="p-5 overflow-x-auto relative">
                 {/* DataTables styles override to fit our design */}
